@@ -78,10 +78,11 @@ for (i in cols){
 }
 ```
 
-**CAMBIO P2**: Volvemos a mostrar el dataset para ver como se ha actualizado con los cambios.
+**CAMBIO P2**: Volvemos a mostrar el dataset para ver como se ha actualizado con los cambios.--HECHO
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 
 ```
+print(dfSummary(totalData), method = 'render')
 
 
 ## Procesos de análisis del juego de datos
