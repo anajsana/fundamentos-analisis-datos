@@ -64,7 +64,7 @@ totalData$Embarked[totalData$Embarked==""] = "C"
 totalData$Age[is.na(totalData$Age)] <- mean(totalData$Age,na.rm=T)
 ```
 
-Discretizamos cuando tiene sentido y en función de cada variable. (**CAMBIO P1**: Actualizar para incluir en las columnas a discretizar "Sex" y "Embarked" - prueba para git).
+Discretizamos cuando tiene sentido y en función de cada variable. (**CAMBIO P1**: Actualizar para incluir en las columnas a discretizar "Sex" y "Embarked" - prueba para git - Probamos un merge).
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # ¿Para qué variables tendrá sentido un proceso de discretización?
