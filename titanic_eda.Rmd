@@ -64,7 +64,11 @@ totalData$Embarked[totalData$Embarked==""] = "C"
 totalData$Age[is.na(totalData$Age)] <- mean(totalData$Age,na.rm=T)
 ```
 
+
 Discretizamos cuando tiene sentido y en función de cada variable. (**CAMBIO P1**: Actualizar para incluir en las columnas a discretizar "Sex" y "Embarked" - prueba para git - Probamos un merge).
+
+Actualizar para incluir en las columnas a discretizar "Sex" y "Embarked" - prueba para git).
+
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # ¿Para qué variables tendrá sentido un proceso de discretización?
@@ -94,7 +98,7 @@ ggplot(data=totalData[1:filas,],aes(x=Sex,fill=Survived))+geom_bar(position="fil
 
 ```
 
-**CAMBIO P3:** Repetimos la grafica anterior utilizando la columna Embarked.
+**CAMBIO P3333333:** Repetimos la grafica anterior utilizando la columna Embarked.
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 ggplot(data = totalData[1:filas,],aes(x=Embarked,fill=Survived))+geom_bar(position="fill")+ylab("Frecuencia")
 
