@@ -1,0 +1,212 @@
+---
+title: "ejercicios-probabilidad"
+author: "ana jimenez"
+date: "10/26/2019"
+output: pdf_document
+---
+
+# TRABAJO EJERCÍCIOS PROBABILIDAD
+
+---
+
+El conjunto de datos BATTERY incluido en el paquete PASWR2 contiene 100 observaciones de 2 variables correspondientes a la duración de dos tipos de baterías A y B (en horas). El conjunto de datos es un data.frame con las columnas lifetime y facility.
+
+Fíjate que tienes que tener instalado el paquete PASWR2 para poder acceder a este conjunto de datos. La variable de interés es lifetime, pero como sabemos que los datos se refieren a dos tipos distintos de baterías, posiblemente nos interese separarlos. En esta práctica vamos a realizar cálculo de probabilidades basados en este conjunto de datos para que se vea una aplicación, aunque tengamos que hacer uso de algún concepto de inferencia.
+
+```{r}
+# bajar paquetes 
+
+library(PASWR2)
+library(dplyr)
+library(ggplot2)
+library(readr)
+
+# acceder al data frame BATERY
+
+data_batery <- BATTERY
+head(data_batery, 100)
+
+# ordenar el data frame en forma ascendente de la columna lifetime
+
+data_arranged <- data_batery %>%
+  arrange(lifetime)
+data_arranged
+
+```
+
+# Actividad 1
+***
+
+* Realiza un histograma de todas las filas de la variable lifetime y comprueba que efectivamente nos interesa separar los datos.
+
+## Código:
+
+```{r}
+bar <- ggplot(data=data_batery, aes(x=lifetime)) +
+       geom_histogram(color="black" , fill="green") +
+       labs(title="lifetime")
+bar
+```
+
+## Explicación:
+
+Con la librería ggplot conseguimos visualizar el histograma de la columna lifetime (representado en el eje x) utilizando geom_histogram para representar los datos y añadiendo estética básica con las etiquetas color y fill
+
+---
+
+Crea dos conjuntos de datos diferentes para los dos tipos de baterías, por ejemplo datosA y datosB.
+
+```{r}
+# Creación de nueva variable para datos de batería tipo A
+
+datos_A <- data_batery %>%
+    filter(facility == "A")
+datos_A
+
+# Creación de nueva variable para datos de batería tipo B
+
+datos_B <- data_batery %>%
+    filter(facility == "B")
+datos_B
+```
+## Explicación:
+
+
+---
+
+Realiza ahora un histograma de cada uno de los tipos y comenta si te parece que los datos siguen una
+distribucion normal
+
+## Código:
+
+```{r}
+hist_datos_A <- ggplot(data=datos_A, aes(x=lifetime)) +
+                geom_histogram(color="black" , fill="blue") +
+                labs(title="Histograma batería tipo A")
+hist_datos_A
+
+hist_datos_B <- ggplot(data=datos_B, aes(x=lifetime)) +
+               geom_histogram(color="black" , fill="red") +
+               labs(title="Histograma batería tipo B")
+hist_datos_B
+
+```
+## Explicación:
+
+
+
+---
+
+Confirma tus conclusiones con alguna/s de las herramientas vistas en clase (test de normalidad, gráfico Quantil-Quantil, etc)
+
+## Código:
+
+```{r}
+normal_test_A <- shapiro.test(datos_A$lifetime)
+normal_test_A
+
+# The data is normal if the p-value is above 0.05. So we now know our variable is normally distributed.
+normal_test_B <- shapiro.test(datos_B$lifetime)
+normal_test_B
+```
+## Explicación: 
+Hemos utilizado el test de Shapiro-Wilk para contrastar la normalidad de ambos data frames. Siendo Nuestra hipotesis nula (Ho) que el data frame asignado a la variable datos_A y el data frame asignado a la variable datos_B estan distribuidos normalmente, podemos decir que dicha hipótesis no puede ser rechazada al encontrarnos con valores de p-valor y W mayores al nivel de significancia (alpha = 0.05)
+# Actividad 2
+***
+Realiza una estimación puntual de la media y la desviación típica de la población de cada tipo de baterías
+## Código:
+```{r}
+mean_datos_A <- datos_A %>%
+  summarize(mean_datos_A = mean(lifetime, na.rm = TRUE))
+mean_datos_A
+# Utilizamos la función summarize() de la libreria dplyr para poder combinar todos los valores de la columna "lifetime" para sacar la media con el comando mean().
+# Añadimos na.rm = TRUE para eliminar todos los espacios sin datos y así evitar un resultado NA 
+
+mean_datos_B <- datos_B %>%
+  summarize(mean_datos_B = mean(lifetime, na.rm = TRUE))
+mean_datos_B
+
+sd_datos_A <- datos_A %>%
+  summarize(sd_datos_A = sd(lifetime, na.rm =TRUE))
+sd_datos_A
+
+sd_datos_B <- datos_B %>%
+  summarize(sd_datos_B = sd(lifetime, na.rm =TRUE))
+sd_datos_B
+```
+## Explicación:
+Para calcular la media y la variable de los datos dentro de la columna "lifetime" de nuestros data frame (asignados a la variable datos_A y datos_B) hemos utilizado la función summarize() de la libreria dplyr para poder combinar todos los valores de la columna y así sacar la media con el comando mean() y la desviación típica con el comando ds()
+
+---
+
+Calcula la probabilidad de que una batería tomada al azar del tipo A dure más de 210 horas
+## Código:
+```{r}
+# como queremos saber saber la probabilidad de una batería tomada al azar del tipo A dure más de 210 horas, nos interesa saber el upper tail de nuestra distribución normal
+pnorm_d_A <- pnorm(210, mean=200.5087, sd=2.745777, lower.tail=FALSE)
+pnorm_d_A
+```
+* Calcula la probabilidad de que una batería tomada al azar del tipo B dure menos de 175 horas
+```{r}
+pnorm_d_B <- pnorm(175, mean=179.6805, sd=2.084977, lower.tail=TRUE)
+pnorm_d_B
+```
+## Explicación:
+
+
+---
+Encuentra cuál es la duración máxima del 3% de las pilas del tipo B que duran menos
+## Código:
+```{r}
+B_quantile <- datos_B %>%
+  summarize(B_quanti = quantile(lifetime, 0.03))
+B_quantile
+```
+## Explicación:
+Los quantiles nos permiten dividir los datos en grupos de igual tamaño. Para saber cual es la duración máxima del 3% de las pilas tipo B que tienen un lifetime menor, deberemos de hallar un valor concreto en nuestra distribución que nos permita dividir nuestro data frame en un grupo con el 3% de los datos y otro con el 97% restante. Por ello, buscaremos el cuantil 0.03 de nuestra distribución de la columna lifetime con la función summarize() y quantile()
+
+# Actividad 3
+***
+Vamos a centrarnos ahora en las baterías de tipo B. Supongamos que una duración por debajo de 175 horas no es aceptable para el usuario de la batería. En la actividad anterior hemos calculado la probabilidad p de que esto suceda. Entonces, si tomamos una batería del tipo B al azar y comprobamos si dura menos de 175 horas, estamos realizando un experimento de Bernoulli con probabilidad p.
+
+---
+
+Calcula la probabilidad de que en un lote de 10 baterías, no haya ninguna defectuosa
+```{r}
+# dbinom(x= valor de la variable , size= , p) <- obtenemos la funcion densidad (continuas) o probabilidad (discretas)
+dbinom(0, 10, 0.01238828)
+```
+## Explicación
+
+Definimos nuestro caso de éxito como que una batería salga defectuosa, por tanto p (la probabilidad de éxito) será igual a la probabilidad de que una batería salga defectuosa. Establecemos n como el número de observaciones que vamos a hacer, y como x la cantidad de ocurrencias de éxito
+
+---
+
+Imagina que las baterías se fabrican en serie e independientemente. ¿Cuál es la probabilidad de que la batería producida en quinto lugar sea la primera defectuosa?
+## Código 
+```{r}
+dgeom(4, 0.01238828) # que la primera defectuosa este entre las 5 primeras (4=q= number of failures in a sequence of Bernoulli trials before success occurs)
+```
+## Explicación
+
+Aqúi queremos saber la probabilidad de que la batería en quinto lugar sea la primera defectuosa (caso de éxito). Por lo tanto, los 4 primeros sucesos tendrán que ser fracasos (q)
+
+---
+Supongamos que en una caja de 20 baterías van 3 defectuosas. ¿Cuál es la probabilidad de que al tomar una muestra sin reposición de 5 baterías al menos una sea defectuosa?
+
+## Código
+```{r}
+phyper(4, 17, 3, 5) # (x= vector of quantiles, m= humber of WB in the urn, n= number of BB in the urn, k= number of balls drawn from the urn)
+```
+## Explicación:
+
+
+
+
+# Actividad 4
+***
+Seguimos con las baterías de tipo B, pero en vez de hacer experimentos de Bernoulli queremos estudiar el número de baterías defectuosas fabricadas cada día. Supongamos que se fabrican 1000 baterías cada día.Entonces, cada día en promedio se estarán produciendo aproximadamente 1000 × p baterías, y el número de baterías defectuosas por día sigue una distribución de Poisson. Tomemos 12 como ese promedio de baterías defectuosas cada día.
+
+---
+
+¿Cuál es la probabilidad de que un día se produzcan más de 20 baterías defectuosas?
