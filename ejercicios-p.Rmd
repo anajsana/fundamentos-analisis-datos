@@ -42,10 +42,8 @@ data_arranged
 ## Código:
 
 ```{r}
-bar <- ggplot(data=data_batery, aes(x=lifetime)) +
-       geom_histogram(color="black" , fill="green") +
-       labs(title="lifetime")
-bar
+hist(datos$lifetime,breaks=20,main = "Histograma del conjunto de datos" ,xlab = "Tiempo de vida de las baterías",ylab="Frecuencia",
+     col = "orange", border = "white", bg = "white", freq = TRUE)
 ```
 
 ## Explicación:
