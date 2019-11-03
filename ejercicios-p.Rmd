@@ -41,7 +41,7 @@ Realiza un histograma de todas las filas de la variable lifetime y comprueba que
 
 ## Código:
 
-```{r}
+```{r echo=TRUE}
 hist(datos$lifetime,breaks=20,main = "Histograma del conjunto de datos" ,xlab = "Tiempo de vida de las baterías",ylab="Frecuencia",
      col = "orange", border = "white", bg = "white", freq = TRUE)
 ```
@@ -62,13 +62,14 @@ datosA<-datos[datos$facility=="A",]
 datosB<-datos[datos$facility=="B",]
 ```
 
-```{r echo=FALSE,results='markup'}
+```{r echo=TRUE,results='markup'}
 kable(head(datosA,5),caption = "Conjunto de datos A")
 kable(head(datosB,5),caption = "Conjunto de datos B")
 ```
+
 ## Explicación:
 
-Creamos dos nuevas variables (datosA y datosB) para los dos conjuntos de datos de baterías tipo A y baterías tipo B
+Creamos dos nuevas variables (**datosA** y **datosB**) para los dos conjuntos de datos de baterías tipo A y baterías tipo B
 
 ---
 
@@ -76,17 +77,18 @@ Realiza ahora un histograma de cada uno de los tipos y comenta si te parece que 
 
 ## Código:
 
-```{r}
+```{r echo=TRUE}
 hist(datosA$lifetime, breaks = 8,main = "DatosA" ,xlab = "Tiempo de vida de las baterías",ylab = "Densidad",
      col = "orange", border = "white", bg = "white", freq = FALSE)
 curve(dnorm(x, mean(datosA$lifetime), sd(datosA$lifetime)), add = TRUE, lwd = 2, lty = 2)
 ```
 
-```{r}
+```{r echo=TRUE}
 hist(datosB$lifetime, breaks = 8,main = "DatosB" ,xlab = "Tiempo de vida de las baterías",ylab = "Densidad",
      col = "orange", border = "white", bg = "white", freq = FALSE)
 curve(dnorm(x, mean(datosB$lifetime), sd(datosB$lifetime)), add = TRUE, lwd = 2, lty = 2)
 ```
+
 ## Explicación:
 
 Creamos un histograma de cada uno de los tipos de baterías para comprobar que efectivamente ambos subconjuntos siguen una distribución normal
@@ -135,23 +137,20 @@ qqline(datosB$lifetime,lwd=2)
 
 ## Explicación: 
 
-Al visualizar la curva en ambos histogramas podemos ver que siguen una distribución normal, no obstante, para confirma nuestras suposiciones procedemos a realizar un test de normalidad y un gráfico Quantil-Quantil
+Al visualizar la curva en ambos histogramas podemos ver que siguen una distribución normal, no obstante, para confirmar nuestras suposiciones procedemos a realizar un test de normalidad y un gráfico Quantil-Quantil
 
-Hemos utilizado el test de Shapiro-Wilk para contrastar la normalidad de ambos data frames. Siendo nuestra hipotesis nula (Ho) que el data frame asignado a la variable datosA y el data frame asignado a la variable datosB estan distribuidos normalmente, podemos decir que dicha hipótesis no puede ser rechazada al encontrarnos con valores de p-valor y W mayores al nivel de significancia (alpha = 0.05)
-
-**Podriamos añadir una explicación teóricas de los test utilizados (que son los que aparecen en las diapos)**
-En los gráficos Q-Q vemos como los cuantiles teóricos y los del conjunto de datos tienen prácticamente la misma forma. Además, Con los valores obtenidos en los anteriores apartados podemos decir que la hipótesis nula $H_0$ no puede ser rechazada al encontrarnos con valores de p-valor y W mayores al nivel de significancia ($\alpha=$ 0.05 establecido por nosotros)
+Hemos utilizado los tests Shapiro-Wilk y Anderson-Darling para contrastar la normalidad de ambos data frames. Siendo nuestra hipotesis nula $(Ho)$ que el data frame asignado a la variable **datosA** y el data frame asignado a la variable **datosB** estan distribuidos normalmente, podemos decir que dicha hipótesis no puede ser rechazada al encontrarnos con valores de p-valor y W mayores al nivel de significancia $(\alpha=0.05)$. Además, si nos fijamos en los gráficos Q-Q, vemos como los cuantiles teóricos y los del conjunto de datos tienen prácticamente la misma forma. Por lo que, de aquí en adelante, asumiremos que ambos conjuntos de datos estarán normalmente distribuidos.
 
 ---
 
 # Actividad 2
 ***
-Realiza una estimación puntual de la media y la desviación típica de la población de cada tipo de baterías
 
+Realiza una estimación puntual de la media y la desviación típica de la población de cada tipo de baterías
 
 ## Código:
 
-```{r}
+```{r echo=TRUE,results='hide'}
 mediaA<-mean(datosA$lifetime)
 stdA<-sd(datosA$lifetime)
 
@@ -184,37 +183,39 @@ $X_B$$\sim$$N(\mu_B,\sigma_B)$
 
 **Cuestiones de probabilidad:**
 
-Calcula la probabilidad de que una batería tomada al azar del tipo A dure más de 210 horas 
+* Calcula la probabilidad de que una batería tomada al azar del tipo A dure más de 210 horas 
 
 ## Código
 
 ```{r echo =TRUE,results='hide'}
 R<-pnorm(q=210,mean = mean(datosA$lifetime),sd= sd(datosA$lifetime),lower.tail = F)
 ```
+
 Entonces $P[X\geq210]=$ `r R`
 
 ## Explicación:
 
-Sacamos la función de distribución para P > 210. Como queremos saber saber la probabilidad de una batería tomada al azar del tipo A dure más de 210 horas, nos interesa saber el upper tail de nuestra distribución normal
+Obtenemos el valor de la función de distribución para $X\geq210$. Como queremos  saber la probabilidad de una batería tomada al azar del tipo A dure más de 210 horas, nos interesa saber el upper tail de nuestra distribución normal
 
 ---
 
-Calcula la probabilidad de que una batería tomada al azar del tipo B dure menos de 175 horas
+* Calcula la probabilidad de que una batería tomada al azar del tipo B dure menos de 175 horas
 
 ## Código
 
 ```{r echo=TRUE,results='hide'}
 p<-pnorm(q=174,mean = mean(datosB$lifetime),sd=sd(datosB$lifetime),lower.tail = T)
 ```
+
 Entonces $P[X<175]=P[X1\leq174]$ `r p`
 
 ## Explicación:
 
-Sacamos la función de distribución para P > 175. Como queremos saber saber la probabilidad de una batería tomada al azar del tipo A dure menos de 175 horas, nos interesa saber el lower tail de nuestra distribución normal
+Obtenemos el valor de la función de distribución para $X<175=X\leq174$ . Como queremos saber saber la probabilidad de una batería tomada al azar del tipo A dure menos de 175 horas, nos interesa saber el lower tail de nuestra distribución normal.
 
 ---
 
-Encuentra cuál es la duración máxima del 3% de las pilas del tipo B que duran menos (ayuda: es equivalente a encontrar el quantil 0.03 de la distribución)
+* Encuentra cuál es la duración máxima del 3% de las pilas del tipo B que duran menos
 
 ## Código
 
@@ -239,18 +240,19 @@ Vamos a centrarnos ahora en las baterías de tipo B. Supongamos que una duració
 
 **Cuestiones de probabilidad:**
 
-Calcula la probabilidad de que en un lote de 10 baterías, no haya ninguna defectuosa
+* Calcula la probabilidad de que en un lote de 10 baterías, no haya ninguna defectuosa
 
 ## Código
 
 ```{r echo=TRUE,results='hide'}
 R<-dbinom(0, 10, p)
 ```
+
 $P[X=0]=$ `r R`
 
 ## Explicación
 
-Definimos nuestro caso de éxito como que una batería salga defectuosa, por tanto p (la probabilidad de éxito) será igual a la probabilidad de que una batería salga defectuosa. Establecemos n como el número de observaciones que vamos a hacer, y como x la cantidad de ocurrencias de éxito
+Establecemos nuestro caso de éxito como que una batería salga defectuosa, por tanto p (la probabilidad de éxito) será igual a la probabilidad de que una batería salga defectuosa. Establecemos n como el número de observaciones que vamos a hacer, y como x la cantidad de ocurrencias de éxito
 
 Si definimos:
 
@@ -264,7 +266,7 @@ Entonces: $X\sim Bin(10;$ `r p` $)$
 
 ---
 
-Imagina que las baterías se fabrican en serie e independientemente ¿Cuál es la probabilidad de que la batería producida en quinto lugar sea la primera defectuosa? (ayuda: distribución geométrica)
+* Imagina que las baterías se fabrican en serie e independientemente ¿Cuál es la probabilidad de que la batería producida en quinto lugar sea la primera defectuosa? (ayuda: distribución geométrica)
 
 ## Código
 
@@ -289,7 +291,7 @@ Entonces: $X\sim Ge($ `r p` $)$
 
 ---
 
-Supongamos que en una caja de 20 baterías van 3 defectuosas. ¿Cuál es la probabilidad de que al tomar una muestra sin reposición de 5 baterías al menos una sea defectuosa?  (ayuda: distribución hipergeométrica)
+* Supongamos que en una caja de 20 baterías van 3 defectuosas. ¿Cuál es la probabilidad de que al tomar una muestra sin reposición de 5 baterías al menos una sea defectuosa?  (distribución hipergeométrica)
 
 ## Código
 
@@ -349,7 +351,7 @@ $P[X>20]=$ `r R`
 * La fábrica funciona de lunes a viernes ¿Qué distribución sigue el número de baterías defectuosas por semana? Justifica qué propiedad se aplica.
 
 Si cada día de la semana es independiente, podemos decir que para cada día (de lunes a viernes) tenemos una $X_i\sim Poiss(\lambda_i)$ . Si además tomamos 12 como promedio de baterías defectuosas al día $(\lambda=12)$ tendremos para cada día 5 v.a. independientes con distribución de $Poiss(\lambda_i=12)$ . Si aplicamos la propiedad asociativa en la que sabemos que la suma de n variables aleatoria de Poisson independientes dan lugar a una nueva v.a. con distribución de Poisson igual a la suma de sus parámetros, tendremos: 
-$X:$ Número de baterías defectuosas por día
+$X:$ Número de baterías defectuosas por semana
 
 $X\sim Poiss(\lambda=60)$ 
 
@@ -381,6 +383,7 @@ Podremos notar que : $\mu_w =$ `r mediaB_Weibull` y $\mu_2=$ `r mediaB` comparan
 Siguiendo con el criterio de la actividad 2 sabemos que una batería es defectuosa cuando dura menos de 175 horas. Además se calculó esa probabilidad $p=$ `r p` de que una batería del conjunto B durara menos de 175 horas.
 
 Si en nuestra simulación$X\sim We(a=100,b=185)$ calculamos:
+
 ```{r echo=TRUE,results='hide'}
 pWeibull<-pweibull(174,100,185)
 ```
