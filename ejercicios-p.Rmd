@@ -1,6 +1,6 @@
 ---
 title: "Práctica 2 - Modelos de distribución de probabilidad"
-author: "Gerardo Adrián Aguirre Vivar & demás"
+author: "Gerardo Adrián Aguirre Vivar, Ana Jiménez Santamaría, David"
 date: "02 de noviembre de 2019"
 output: pdf_document
 ---
@@ -37,7 +37,9 @@ kable(tail(datos,5),caption = "Conjunto de datos - últimas 5 filas")
 # Actividad 1
 ***
 
-Se realiza un histograma de todas las filas de la variable lifetime para comprobar que efectivamente nos interesa separar los datos.
+Realiza un histograma de todas las filas de la variable lifetime y comprueba que efectivamente nos interesa separar los datos
+
+## Código:
 
 ```{r}
 hist(datos$lifetime,breaks=20,main = "Histograma del conjunto de datos" ,xlab = "Tiempo de vida de las baterías",ylab="Frecuencia",
@@ -46,11 +48,13 @@ hist(datos$lifetime,breaks=20,main = "Histograma del conjunto de datos" ,xlab = 
 
 ## Explicación:
 
-~Aquí debemos añadir una explicación de porque con la gráfica que sale debemos saber que se trata de dos conjuntos de datos~
+Se realiza un histograma de todas las filas de la variable lifetime. Vemos que la visualización que aparece al ejecutar el siguiente código muestra una distribución "Dog-food", en donde tenemos dos clusers completamente aislados y sin ninguna relación entre ellos. Efectivamente, en este caso si nos interesa separar los datos en dos conjuntos  
 
 ---
 
-Se crean dos data.frames para los dos conjuntos de datos que existen
+Crea dos conjuntos de datos diferentes para los dos tipos de baterías, por ejemplo datosA y datosB
+
+## Código:
 
 ```{r}
 # Este código 
@@ -62,8 +66,15 @@ datosB<-datos[datos$facility=="B",]
 kable(head(datosA,5),caption = "Conjunto de datos A")
 kable(head(datosB,5),caption = "Conjunto de datos B")
 ```
+## Explicación:
 
-Ahora se procede a realizar un histograma de cada uno de los tipos de baterías para comprobar que efectivamente ambos subconjuntos siguen una distribución normal
+Creamos dos nuevas variables (datosA y datosB) para los dos conjuntos de datos de baterías tipo A y baterías tipo B
+
+---
+
+Realiza ahora un histograma de cada uno de los tipos y comenta si te parece que los datos siguen una distribucion normal
+
+## Código:
 
 ```{r}
 hist(datosA$lifetime, breaks = 8,main = "DatosA" ,xlab = "Tiempo de vida de las baterías",ylab = "Densidad",
@@ -76,20 +87,15 @@ hist(datosB$lifetime, breaks = 8,main = "DatosB" ,xlab = "Tiempo de vida de las 
      col = "orange", border = "white", bg = "white", freq = FALSE)
 curve(dnorm(x, mean(datosB$lifetime), sd(datosB$lifetime)), add = TRUE, lwd = 2, lty = 2)
 ```
-
 ## Explicación:
 
-~Decir que la curva (en discontinuo tiene la forma de una normal, pero para estar más seguro luego se calcula un p-valor)~
+Creamos un histograma de cada uno de los tipos de baterías para comprobar que efectivamente ambos subconjuntos siguen una distribución normal
 
 ---
 
-Además, para confirma nuestras suposiciones se procede a realizar un test de normalidad y un gráfico Quantil-Quantil.
+Confirma tus conclusiones con alguna/s de las herramientas vistas en clase (test de normalidad, gráfico Quantil-Quantil, etc)
 
-Si establecemos que:
-
-$H_0:$ Los datos de A/B siguen una distribución normal
-
-$H_1:$ Los datos de A/B no siguen una distribución normal
+## Código:
 
 **Tests de normalidad para el conjunto de pilas A**
 
@@ -128,6 +134,10 @@ qqline(datosB$lifetime,lwd=2)
 ```
 
 ## Explicación: 
+
+Al visualizar la curva en ambos histogramas podemos ver que siguen una distribución normal, no obstante, para confirma nuestras suposiciones procedemos a realizar un test de normalidad y un gráfico Quantil-Quantil
+
+Hemos utilizado el test de Shapiro-Wilk para contrastar la normalidad de ambos data frames. Siendo nuestra hipotesis nula (Ho) que el data frame asignado a la variable datosA y el data frame asignado a la variable datosB estan distribuidos normalmente, podemos decir que dicha hipótesis no puede ser rechazada al encontrarnos con valores de p-valor y W mayores al nivel de significancia (alpha = 0.05)
 
 **Podriamos añadir una explicación teóricas de los test utilizados (que son los que aparecen en las diapos)**
 En los gráficos Q-Q vemos como los cuantiles teóricos y los del conjunto de datos tienen prácticamente la misma forma. Además, Con los valores obtenidos en los anteriores apartados podemos decir que la hipótesis nula $H_0$ no puede ser rechazada al encontrarnos con valores de p-valor y W mayores al nivel de significancia ($\alpha=$ 0.05 establecido por nosotros)
