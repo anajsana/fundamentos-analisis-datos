@@ -146,7 +146,10 @@ En los gráficos Q-Q vemos como los cuantiles teóricos y los del conjunto de da
 
 # Actividad 2
 ***
-Ahora que sabemos que nuestros datos siguen aproximadamente una distribución normal $X$$\sim$$N(\mu,\sigma)$, tendríamos que estimar sus parámetros $\mu$ y $\sigma$ del conjunto de pilas A y B para posteriormente realizar cálculos de probabilidad:
+Realiza una estimación puntual de la media y la desviación típica de la población de cada tipo de baterías
+
+
+## Código:
 
 ```{r}
 mediaA<-mean(datosA$lifetime)
@@ -155,6 +158,9 @@ stdA<-sd(datosA$lifetime)
 mediaB<-mean(datosB$lifetime)
 stdB<-sd(datosB$lifetime)
 ```
+## Explicación:
+
+Ahora que sabemos que nuestros datos siguen aproximadamente una distribución normal $X$$\sim$$N(\mu,\sigma)$, tenemos que estimar sus parámetros $\mu$ y $\sigma$ del conjunto de pilas A y B para posteriormente realizar cálculos de probabilidad
 
 **Media y desviación tipica de los datos de A:**
 
@@ -174,26 +180,43 @@ $X_A$$\sim$$N(\mu_A,\sigma_A)$
 
 $X_B$$\sim$$N(\mu_B,\sigma_B)$
 
+---
 
 **Cuestiones de probabilidad:**
 
-* Calcula la probabilidad de que una batería tomada al azar del tipo A dure más de 210 horas 
+Calcula la probabilidad de que una batería tomada al azar del tipo A dure más de 210 horas 
+
+## Código
 
 ```{r echo =TRUE,results='hide'}
 R<-pnorm(q=210,mean = mean(datosA$lifetime),sd= sd(datosA$lifetime),lower.tail = F)
 ```
-
 Entonces $P[X\geq210]=$ `r R`
 
-* Calcula la probabilidad de que una batería tomada al azar del tipo B dure menos de 175 horas
+## Explicación:
+
+Sacamos la función de distribución para P > 210. Como queremos saber saber la probabilidad de una batería tomada al azar del tipo A dure más de 210 horas, nos interesa saber el upper tail de nuestra distribución normal
+
+---
+
+Calcula la probabilidad de que una batería tomada al azar del tipo B dure menos de 175 horas
+
+## Código
 
 ```{r echo=TRUE,results='hide'}
 p<-pnorm(q=174,mean = mean(datosB$lifetime),sd=sd(datosB$lifetime),lower.tail = T)
 ```
-
 Entonces $P[X<175]=P[X1\leq174]$ `r p`
 
-* Encuentra cuál es la duración máxima del 3% de las pilas del tipo B que duran menos (ayuda: es equivalente a encontrar el quantil 0.03 de la distribución)
+## Explicación:
+
+Sacamos la función de distribución para P > 175. Como queremos saber saber la probabilidad de una batería tomada al azar del tipo A dure menos de 175 horas, nos interesa saber el lower tail de nuestra distribución normal
+
+---
+
+Encuentra cuál es la duración máxima del 3% de las pilas del tipo B que duran menos (ayuda: es equivalente a encontrar el quantil 0.03 de la distribución)
+
+## Código
 
 ```{r echo=TRUE,results='hide'}
 R<-qnorm(p=0.03,mean = mean(datosB$lifetime),sd=sd(datosB$lifetime))
@@ -203,21 +226,31 @@ Entonces cuantil 0.03= `r R`
 
 ## Explicación:
 
-**Creo que solo habría que añadir esta explicación para el cálculo del cuantil**
 Los quantiles nos permiten dividir los datos en grupos de igual tamaño. Para saber cual es la duración máxima del 3% de las pilas tipo B que tienen un lifetime menor, deberemos de hallar un valor concreto en nuestra distribución que nos permita dividir nuestro data frame en un grupo con el 3% de los datos y otro con el 97% restante. Por ello, buscaremos el cuantil 0.03 de nuestra distribución.
-~Verdaderamente no habría mucho que comentar~
 
----
 
 # Actividad 3
+
 ***
+
 Vamos a centrarnos ahora en las baterías de tipo B. Supongamos que una duración por debajo de 175 horas no es aceptable para el usuario de la batería. En la actividad anterior hemos calculado la probabilidad p de que esto suceda. Entonces, si tomamos una batería del tipo B al azar y comprobamos si dura menos de 175 horas, estamos realizando un experimento de Bernoulli con probabilidad p.
 
 ---
 
 **Cuestiones de probabilidad:**
 
-* Calcula la probabilidad de que en un lote de 10 baterías, no haya ninguna defectuosa (ayuda: distribución binomial):
+Calcula la probabilidad de que en un lote de 10 baterías, no haya ninguna defectuosa
+
+## Código
+
+```{r echo=TRUE,results='hide'}
+R<-dbinom(0, 10, p)
+```
+$P[X=0]=$ `r R`
+
+## Explicación
+
+Definimos nuestro caso de éxito como que una batería salga defectuosa, por tanto p (la probabilidad de éxito) será igual a la probabilidad de que una batería salga defectuosa. Establecemos n como el número de observaciones que vamos a hacer, y como x la cantidad de ocurrencias de éxito
 
 Si definimos:
 
@@ -229,14 +262,20 @@ $X:$ Número de éxitos en 10 experimentos de Bernoulli con probabilidad $p=$ `r
 
 Entonces: $X\sim Bin(10;$ `r p` $)$
 
+---
+
+Imagina que las baterías se fabrican en serie e independientemente ¿Cuál es la probabilidad de que la batería producida en quinto lugar sea la primera defectuosa? (ayuda: distribución geométrica)
+
+## Código
 
 ```{r echo=TRUE,results='hide'}
-R<-dbinom(0, 10, p)
+R<-dgeom(x=4,prob = p)
 ```
+$P[X=4]=$ `r R`
 
-$P[X=0]=$ `r R`
+## Explicación:
 
-* Imagina que las baterías se fabrican en serie e independientemente ¿Cuál es la probabilidad de que la batería producida en quinto lugar sea la primera defectuosa? (ayuda: distribución geométrica)
+Aquí queremos saber la probabilidad de que la batería en quinto lugar sea la primera defectuosa (caso de éxito). Por lo tanto, los 4 primeros sucesos tendrán que ser fracasos (q)
 
 Si definimos:
 
@@ -248,13 +287,21 @@ $X:$ Número de baterías no defectuosas hasta obtener la primera defectuosa en 
 
 Entonces: $X\sim Ge($ `r p` $)$
 
+---
+
+Supongamos que en una caja de 20 baterías van 3 defectuosas. ¿Cuál es la probabilidad de que al tomar una muestra sin reposición de 5 baterías al menos una sea defectuosa?  (ayuda: distribución hipergeométrica)
+
+## Código
+
 ```{r echo=TRUE,results='hide'}
-R<-dgeom(x=4,prob = p)
+R<-1-dhyper(x=0,m=3,k=5,n=20-3)
 ```
 
-$P[X=4]=$ `r R`
+$P[X\geq1]=1-P[X<1]=1-P[X=0]$=`r R`
 
-* Supongamos que en una caja de 20 baterías van 3 defectuosas. ¿Cuál es la probabilidad de que al tomar una muestra sin reposición de 5 baterías al menos una sea defectuosa?  (ayuda: distribución hipergeométrica)
+## Explicación
+
+**Añadir si quereis alguna explicación en esta línea**
 
 Si definimos:
 
@@ -266,21 +313,12 @@ $X:$ Número de pilas defectuosas obtenidas en un muestreo sin reemplazo de tama
 
 Entonces: $X\sim HG(20,3,5)$ 
 
-```{r echo=TRUE,results='hide'}
-R<-1-dhyper(x=0,m=3,k=5,n=20-3)
-```
-
-$P[X\geq1]=1-P[X<1]=1-P[X=0]$=`r R`
-
-## Explicacion
-
-**Añadir si quereis alguna explicación**
-
 ---
 
-
 # Actividad 4
+
 ***
+
 Seguimos con las baterías de tipo B, pero en vez de hacer experimentos de Bernoulli queremos estudiar el número de baterías defectuosas fabricadas cada día. Supongamos que se fabrican 1000 baterías cada día.Entonces, cada día en promedio se estarán produciendo aproximadamente 1000 × p baterías, y el número de baterías defectuosas por día sigue una distribución de Poisson. Tomemos 12 como ese promedio de baterías defectuosas cada día.
 
 **Planteamiento:**
