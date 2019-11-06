@@ -1,6 +1,6 @@
 ---
 title: "Práctica 2 - Modelos de distribución de probabilidad"
-author: "Gerardo Adrián Aguirre Vivar, Ana Jiménez Santamaría, David"
+author: "Gerardo Adrián Aguirre Vivar, Ana Jiménez Santamaría, David Durán Prieto"
 date: "02 de noviembre de 2019"
 output: pdf_document
 ---
@@ -42,22 +42,22 @@ Realiza un histograma de todas las filas de la variable lifetime y comprueba que
 ## Código:
 
 ```{r echo=TRUE}
-hist(datos$lifetime,breaks=20,main = "Histograma del conjunto de datos" ,xlab = "Tiempo de vida de las baterías",ylab="Frecuencia",
+hist(datos$lifetime,breaks=20,main = "Histograma del conjunto de datos" ,
+     xlab = "Tiempo de vida de las baterías",ylab="Frecuencia",
      col = "orange", border = "white", bg = "white", freq = TRUE)
 ```
 
 ## Explicación:
 
-Se realiza un histograma de todas las filas de la variable lifetime. Vemos que la visualización que aparece al ejecutar el siguiente código muestra una distribución "Dog-food", en donde tenemos dos clusers completamente aislados y sin ninguna relación entre ellos. Efectivamente, en este caso si nos interesa separar los datos en dos conjuntos  
+Se realiza un histograma de la variable **lifetime**. Observamos que muestra una distribución bimodal (***Dog-food***), en donde tenemos dos clusters completamente aislados. Cada uno parece tener una media distinta, y no hay solapamiento entre ambos grupos. En este caso, sí nos interesa separar los datos en dos conjuntos, para poder analizarlos por separado. 
 
 ---
 
-Crea dos conjuntos de datos diferentes para los dos tipos de baterías, por ejemplo datosA y datosB
+Crea dos conjuntos de datos diferentes para los dos tipos de baterías, por ejemplo datosA y datosB.
 
 ## Código:
 
-```{r}
-# Este código 
+```{r echo=TRUE}
 datosA<-datos[datos$facility=="A",]
 datosB<-datos[datos$facility=="B",]
 ```
@@ -69,33 +69,33 @@ kable(head(datosB,5),caption = "Conjunto de datos B")
 
 ## Explicación:
 
-Creamos dos nuevas variables (**datosA** y **datosB**) para los dos conjuntos de datos de baterías tipo A y baterías tipo B
+Creamos dos nuevas variables (**datosA** y **datosB**) para los dos conjuntos de datos de baterías (tipo A y tipo B), filtrando por el atributo ***facility***. 
 
 ---
 
-Realiza ahora un histograma de cada uno de los tipos y comenta si te parece que los datos siguen una distribucion normal
+Realiza ahora un histograma de cada uno de los tipos y comenta si te parece que los datos siguen una distribución normal.
 
 ## Código:
 
 ```{r echo=TRUE}
-hist(datosA$lifetime, breaks = 8,main = "DatosA" ,xlab = "Tiempo de vida de las baterías",ylab = "Densidad",
-     col = "orange", border = "white", bg = "white", freq = FALSE)
+hist(datosA$lifetime, breaks = 8,main = "DatosA" ,xlab = "Tiempo de vida de las baterías",
+     ylab = "Densidad",col = "orange", border = "white", bg = "white", freq = FALSE)
 curve(dnorm(x, mean(datosA$lifetime), sd(datosA$lifetime)), add = TRUE, lwd = 2, lty = 2)
 ```
 
 ```{r echo=TRUE}
-hist(datosB$lifetime, breaks = 8,main = "DatosB" ,xlab = "Tiempo de vida de las baterías",ylab = "Densidad",
-     col = "orange", border = "white", bg = "white", freq = FALSE)
+hist(datosB$lifetime, breaks = 8,main = "DatosB" ,xlab = "Tiempo de vida de las baterías",
+     ylab = "Densidad",col = "orange", border = "white", bg = "white", freq = FALSE)
 curve(dnorm(x, mean(datosB$lifetime), sd(datosB$lifetime)), add = TRUE, lwd = 2, lty = 2)
 ```
 
 ## Explicación:
 
-Creamos un histograma de cada uno de los tipos de baterías para comprobar que efectivamente ambos subconjuntos siguen una distribución normal
+Creamos un histograma de cada uno de los tipos de baterías para comprobar que, efectivamente, ambos conjuntos siguen una distribución normal.
 
 ---
 
-Confirma tus conclusiones con alguna/s de las herramientas vistas en clase (test de normalidad, gráfico Quantil-Quantil, etc)
+Confirma tus conclusiones con alguna/s de las herramientas vistas en clase (test de normalidad, gráfico Quantil-Quantil, etc).
 
 ## Código:
 
@@ -137,16 +137,18 @@ qqline(datosB$lifetime,lwd=2)
 
 ## Explicación: 
 
-Al visualizar la curva en ambos histogramas podemos ver que siguen una distribución normal, no obstante, para confirmar nuestras suposiciones procedemos a realizar un test de normalidad y un gráfico Quantil-Quantil
+Al visualizar la curva en ambos histogramas podemos ver que, aparentemente, siguen una distribución normal. No obstante, para confirmar nuestras suposiciones, procedemos a realizar dos tests de normalidad y un gráfico Quantil-Quantil.
 
-Hemos utilizado los tests Shapiro-Wilk y Anderson-Darling para contrastar la normalidad de ambos data frames. Siendo nuestra hipotesis nula $(Ho)$ que el data frame asignado a la variable **datosA** y el data frame asignado a la variable **datosB** estan distribuidos normalmente, podemos decir que dicha hipótesis no puede ser rechazada al encontrarnos con valores de p-valor y W mayores al nivel de significancia $(\alpha=0.05)$. Además, si nos fijamos en los gráficos Q-Q, vemos como los cuantiles teóricos y los del conjunto de datos tienen prácticamente la misma forma. Por lo que, de aquí en adelante, asumiremos que ambos conjuntos de datos estarán normalmente distribuidos.
+Hemos utilizado los tests Shapiro-Wilk y Anderson-Darling para contrastar la normalidad de ambos conjuntos A y B. Siendo nuestra hipotesis nula $(Ho)$ que el subconjunto **datosA** y el subconjunto **datosB** están distribuidos normalmente, podemos decir que dicha hipótesis no puede ser rechazada al encontrarnos con valores de p-valor y W mucho mayores al nivel de significancia $(\alpha=0.05)$. 
 
----
+Además, si nos fijamos en los gráficos Q-Q, vemos como los puntos del gráfico cuantil-cuantil caen aproximadamente sobre una línea recta. Por lo que, de aquí en adelante, asumiremos que ambos conjuntos de datos están normalmente distribuidos.
 
-# Actividad 2
 ***
 
-Realiza una estimación puntual de la media y la desviación típica de la población de cada tipo de baterías
+# Actividad 2
+
+
+Realiza una estimación puntual de la media y la desviación típica de la población de cada tipo de baterías.
 
 ## Código:
 
@@ -159,157 +161,171 @@ stdB<-sd(datosB$lifetime)
 ```
 ## Explicación:
 
-Ahora que sabemos que nuestros datos siguen aproximadamente una distribución normal $X$$\sim$$N(\mu,\sigma)$, tenemos que estimar sus parámetros $\mu$ y $\sigma$ del conjunto de pilas A y B para posteriormente realizar cálculos de probabilidad
+Ahora que sabemos que nuestros conjuntos de datos siguen aproximadamente una distribución normal $X$$\sim$$N(\mu,\sigma)$, tenemos que estimar los parámetros $\mu$ y $\sigma$ para cada conjunto de pilas A y B, para posteriormente realizar cálculos de probabilidad.
 
-**Media y desviación tipica de los datos de A:**
+**Media y desviación tipica del conjunto A:**
 
 $\mu_A$=`r mediaA`
 $\sigma_A$=`r stdA`
 
-**Media y desviación tipica de los datos de B:**
+**Media y desviación tipica del conjunto B:**
 
 $\mu_B$=`r mediaB`
 $\sigma_B$=`r stdB`
 
 Posteriormente, establecemos que:
 
-$X:$duración de las baterías del tipo A/B
+$X$: duración de las baterías del tipo A/B
 
 $X_A$$\sim$$N(\mu_A,\sigma_A)$
 
 $X_B$$\sim$$N(\mu_B,\sigma_B)$
 
----
 
-**Cuestiones de probabilidad:**
+
+## Cuestiones de probabilidad:
 
 * Calcula la probabilidad de que una batería tomada al azar del tipo A dure más de 210 horas 
 
 ## Código
 
 ```{r echo =TRUE,results='hide'}
-R<-pnorm(q=210,mean = mean(datosA$lifetime),sd= sd(datosA$lifetime),lower.tail = F)
+p_210_A<-pnorm(q=210,mean = mediaA,sd= stdA,lower.tail = F)
+porc_210_A<- round(p_210_A*100,3)
 ```
 
-Entonces $P[X\geq210]=$ `r R`
+Entonces $P[X\geq210]=$ `r p_210_A` (`r porc_210_A`%).
 
 ## Explicación:
 
-Obtenemos el valor de la función de distribución para $X\geq210$. Como queremos  saber la probabilidad de una batería tomada al azar del tipo A dure más de 210 horas, nos interesa saber el upper tail de nuestra distribución normal
+Obtenemos el valor de la función de distribución para $X\geq210$. Como queremos saber la probabilidad de que una batería tomada al azar del tipo A dure más de 210 horas, nos interesa obtener el ***upper tail*** de nuestra distribución normal (opción ***lower tail*** deshabilitada).
 
----
 
 * Calcula la probabilidad de que una batería tomada al azar del tipo B dure menos de 175 horas
 
 ## Código
 
 ```{r echo=TRUE,results='hide'}
-p<-pnorm(q=174,mean = mean(datosB$lifetime),sd=sd(datosB$lifetime),lower.tail = T)
+p_175_B<-pnorm(q=175,mean = mediaB,sd=stdB,lower.tail = T)
+porc_175_B<- round(p_175_B*100,3)
 ```
 
-Entonces $P[X<175]=P[X1\leq174]$ `r p`
+Entonces $P[X\leq175]$ `r p_175_B` (`r porc_175_B`%).
 
 ## Explicación:
 
-Obtenemos el valor de la función de distribución para $X<175=X\leq174$ . Como queremos saber saber la probabilidad de una batería tomada al azar del tipo A dure menos de 175 horas, nos interesa saber el lower tail de nuestra distribución normal.
+Obtenemos el valor de la función de distribución para $X\leq175$ . Como queremos saber saber la probabilidad de una batería tomada al azar del tipo A dure menos de 175 horas, nos interesa saber el ***lower tail*** de nuestra distribución normal. La probabilidad $X<175$ se aproxima a $X\leq175$, debido a que la probabilidad de que $X=175$, siendo una variable continua, es prácticamente nula (0).
 
----
 
-* Encuentra cuál es la duración máxima del 3% de las pilas del tipo B que duran menos
+* Encuentra cuál es la duración máxima del 3% de las pilas del tipo B que duran menos.
 
 ## Código
 
 ```{r echo=TRUE,results='hide'}
-R<-qnorm(p=0.03,mean = mean(datosB$lifetime),sd=sd(datosB$lifetime))
+q_3<-qnorm(p=0.03,mean = mediaB,sd=stdB)
 ```
 
-Entonces cuantil 0.03= `r R`
+Entonces, el cuantil 0.03 es `r q_3`
 
 ## Explicación:
 
-Los quantiles nos permiten dividir los datos en grupos de igual tamaño. Para saber cual es la duración máxima del 3% de las pilas tipo B que tienen un lifetime menor, deberemos de hallar un valor concreto en nuestra distribución que nos permita dividir nuestro data frame en un grupo con el 3% de los datos y otro con el 97% restante. Por ello, buscaremos el cuantil 0.03 de nuestra distribución.
+Los cuantiles nos permiten dividir los datos en grupos de igual tamaño. 
 
+El cuantil de orden p de una distribución (con 0 < p < 1) es el valor de la variable x que marca un corte de modo que una proporción p de valores de la población es menor o igual que x. 
 
-# Actividad 3
+Para saber cual es la duración máxima del 3% de las pilas tipo B que tienen un lifetime menor, deberemos hallar el cuantil 0.03 de nuestra distribución (función qnorm con p=0.03).
 
 ***
 
+# Actividad 3
+
+
 Vamos a centrarnos ahora en las baterías de tipo B. Supongamos que una duración por debajo de 175 horas no es aceptable para el usuario de la batería. En la actividad anterior hemos calculado la probabilidad p de que esto suceda. Entonces, si tomamos una batería del tipo B al azar y comprobamos si dura menos de 175 horas, estamos realizando un experimento de Bernoulli con probabilidad p.
 
----
 
 **Cuestiones de probabilidad:**
 
-* Calcula la probabilidad de que en un lote de 10 baterías, no haya ninguna defectuosa
+* Calcula la probabilidad de que en un lote de 10 baterías, no haya ninguna defectuosa.
 
 ## Código
 
 ```{r echo=TRUE,results='hide'}
-R<-dbinom(0, 10, p)
+p<-1-p_175_B
+p_10<-dbinom(10, 10, p)
+porc_10 = round(p_10*100,2)
+
+p_10_2<-dbinom(0, 10, p_175_B)
+porc_10_2 = round(p_10_2*100,2)
 ```
 
-$P[X=0]=$ `r R`
+Vemos en el código dos formas de realizar el cálculo. Con ambas obtenemos que:
+
+$P[X=0]=$ `r p_10` (`r porc_10`%).
+
+
 
 ## Explicación
 
-Establecemos nuestro caso de éxito como que una batería salga defectuosa, por tanto p (la probabilidad de éxito) será igual a la probabilidad de que una batería salga defectuosa. Establecemos n como el número de observaciones que vamos a hacer, y como x la cantidad de ocurrencias de éxito
+Establecemos como nuestro caso de éxito el que una batería no salga defectuosa. Por tanto, la probabilidad de éxito corresponderá con la complementaria de que una batería salga defectuosa. Usando la función dbinom, establecemos la cantidad de ocurrencias de éxito en 10, el número de observaciones en 10, y la probabilidad de éxito como la de que una batería dure más de 175 horas (1 menos p_175_B).
 
-Si definimos:
+Otra posibilidad sería asumir el problema desde otra perspectiva. Nuestro caso de éxito sería que una batería saliese defectuosa. Por tanto, la probabilidad de éxito correspondería con la de que una batería saliera defectuosa. Usando la función dbinom, establecemos la cantidad de ocurrencias de éxito en 0, el número de observaciones en 10, y la probabilidad de éxito como aquella correspondiente a que una batería dure menos de 175 horas (p_175_B).
 
-Exito: Que sea defectuosa
 
-Fracaso: Que no sea defectuosa
+$X:$ Número de éxitos en 10 experimentos de Bernoulli
 
-$X:$ Número de éxitos en 10 experimentos de Bernoulli con probabilidad $p=$ `r p`
+Entonces: $X\sim Bin(10;$ `r p`$)$ = $X\sim Bin(0;$ `r p_175_B`$)$
 
-Entonces: $X\sim Bin(10;$ `r p` $)$
 
----
-
-* Imagina que las baterías se fabrican en serie e independientemente ¿Cuál es la probabilidad de que la batería producida en quinto lugar sea la primera defectuosa? (ayuda: distribución geométrica)
+* Imagina que las baterías se fabrican en serie e independientemente. ¿Cuál es la probabilidad de que la batería producida en quinto lugar sea la primera defectuosa?
 
 ## Código
 
 ```{r echo=TRUE,results='hide'}
-R<-dgeom(x=4,prob = p)
+p_def<-dgeom(x=4,prob = p_175_B)
+porc_def = p_def*100
+porc_def_2=100*(p^4)*(p_175_B)
 ```
-$P[X=4]=$ `r R`
+$P[X=4]=$ `r p_def`.
+
+Probabilidad de que la quinta sea defectuosa: `r porc_def`%.
 
 ## Explicación:
 
-Aquí queremos saber la probabilidad de que la batería en quinto lugar sea la primera defectuosa (caso de éxito). Por lo tanto, los 4 primeros sucesos tendrán que ser fracasos (q)
+Aquí queremos saber la probabilidad de que la batería fabricada en quinto lugar sea la primera defectuosa (caso de éxito). Por lo tanto, los 4 primeros sucesos tendrán que ser fracasos.
 
 Si definimos:
 
-Exito: Que sea defectuosa
+    Exito - que sea defectuosa
 
-Fracaso: Que no sea defectuosa
+    Fracaso - que no sea defectuosa
 
-$X:$ Número de baterías no defectuosas hasta obtener la primera defectuosa en una serie de pruebas de Bernoulli con probabilidad de éxito $p=$ `r p`
+Entonces: $X\sim Ge(x=4,p=$ `r p_175_B` $)$
 
-Entonces: $X\sim Ge($ `r p` $)$
+$X:$ Número de baterías no defectuosas hasta obtener la primera defectuosa en una serie de pruebas de Bernoulli con probabilidad de éxito $p=$ `r p_175_B`
 
----
+
 
 * Supongamos que en una caja de 20 baterías van 3 defectuosas. ¿Cuál es la probabilidad de que al tomar una muestra sin reposición de 5 baterías al menos una sea defectuosa?  (distribución hipergeométrica)
 
 ## Código
 
 ```{r echo=TRUE,results='hide'}
-R<-1-dhyper(x=0,m=3,k=5,n=20-3)
+R<-1-dhyper(x=0,m=3,k=5,n=17)
+porc_R<-round(R*100,3)
 ```
 
-$P[X\geq1]=1-P[X<1]=1-P[X=0]$=`r R`
+Probabilidad de que al menos una batería sea defectuosa:
+$P[X\geq1]=1-P[X<1]=1-P[X=0]$=`r R` (`r porc_R`%).
 
 ## Explicación
 
-**Añadir si quereis alguna explicación en esta línea**
+Apoyándonos en la distribución hipergeométrica, calculamos la probabilidad de extraer más de una batería defectuosa en una muestra de 5, sabiendo que en la caja existen 3 defectuosas frente a 17 que no lo son. Esta probabilidad se calcula como la complementaria de no extraer ninguna batería defectuosa (distribución hipergeométrica con x=0).
 
 Si definimos:
 
-Exito: Que sea defectuosa
+    Exito: Que sea defectuosa
 
-Fracaso: Que no sea defectuosa
+    Fracaso: Que no sea defectuosa
 
 $X:$ Número de pilas defectuosas obtenidas en un muestreo sin reemplazo de tamaño 5 de un conjunto de 20 pilas de las cuales 3 son defectuosas.
 
@@ -319,13 +335,12 @@ Entonces: $X\sim HG(20,3,5)$
 
 # Actividad 4
 
-***
 
 Seguimos con las baterías de tipo B, pero en vez de hacer experimentos de Bernoulli queremos estudiar el número de baterías defectuosas fabricadas cada día. Supongamos que se fabrican 1000 baterías cada día.Entonces, cada día en promedio se estarán produciendo aproximadamente 1000 × p baterías, y el número de baterías defectuosas por día sigue una distribución de Poisson. Tomemos 12 como ese promedio de baterías defectuosas cada día.
 
 **Planteamiento:**
 
-Promedio de baterías defectuosas al día $(\lambda=12)$. Además la probabilidad de que una batería fuera defectuosa ya la calculamos en apartados anteriores$(p=$ `r p` $)$. También sabemos que la distribución de Poisson es una distribución de probabilidad discreta que expresa,a partir de una frecuencia de ocurrencia media, la probabilidad de que ocurra un número de eventos durante un cierto período de tiempo. Se utiliza para medir la ocurrencia de sucesos raros.
+Promedio de baterías defectuosas al día $(\lambda=12)$. Además, la probabilidad de que una batería fuera defectuosa ya la calculamos en apartados anteriores$(p=$ `r p_175_B` $)$. También sabemos que la distribución de Poisson es una distribución de probabilidad discreta que expresa,a partir de una frecuencia de ocurrencia media, la probabilidad de que ocurra un número de eventos durante un cierto período de tiempo. Se utiliza para medir la ocurrencia de sucesos con probabilidades muy pequeñas (sucesos "raros").
 
 Si definimos:
 
@@ -334,32 +349,36 @@ Entonces: $X\sim Poiss(12)$
 
 * ¿Cuál es la probabilidad de que un día se produzcan más de 20 baterías defectuosas?
 
+Valiendonos de la distribución de Poisson, tenemos que:
+
 ```{r echo=TRUE,results='hide'}
-R<-ppois(q=20,lambda = 12,lower.tail = F)
+p_20<-ppois(q=20,lambda = 12,lower.tail = F)
+porc_20<-round(p_20*100,3)
 ```
 
-$P[X>20]=$ `r R`
+$P[X>20]=$ `r p_20` (`r porc_20`%)
 
 * ¿Cuál es la probabilidad de que en un día no salga ninguna batería defectuosa?
 
 ```{r echo=TRUE,results='hide'}
-R<-dpois(x=0,lambda = 12)
+p_0<-dpois(x=0,lambda = 12)
+porc_0<-round(p_0*100,3)
+
 ```
 
-$P[X>20]=$ `r R`
+$P[X>20]=$ `r p_0` (`r porc_0`%)
 
-* La fábrica funciona de lunes a viernes ¿Qué distribución sigue el número de baterías defectuosas por semana? Justifica qué propiedad se aplica.
+* La fábrica funciona de lunes a viernes. ¿Qué distribución sigue el número de baterías defectuosas por semana? Justifica qué propiedad se aplica.
 
-Si cada día de la semana es independiente, podemos decir que para cada día (de lunes a viernes) tenemos una $X_i\sim Poiss(\lambda_i)$ . Si además tomamos 12 como promedio de baterías defectuosas al día $(\lambda=12)$ tendremos para cada día 5 v.a. independientes con distribución de $Poiss(\lambda_i=12)$ . Si aplicamos la propiedad asociativa en la que sabemos que la suma de n variables aleatoria de Poisson independientes dan lugar a una nueva v.a. con distribución de Poisson igual a la suma de sus parámetros, tendremos: 
-$X:$ Número de baterías defectuosas por semana
+Si cada día de la semana es independiente, podemos decir que para cada día (de lunes a viernes) tenemos una $X_i\sim Poiss(\lambda_i)$ . Si además tomamos 12 como promedio de baterías defectuosas al día $(\lambda=12)$, tendremos para cada semana 5 v.a. independientes con distribución de $Poiss(\lambda_i=12)$ . Si aplicamos la propiedad asociativa, por la que sabemos que la suma de n variables aleatorias de Poisson independientes dan lugar a una nueva v.a. con distribución de Poisson igual a la suma de sus parámetros, tendremos:
 
-$X\sim Poiss(\lambda=60)$ 
+$X:$ Número de baterías defectuosas por semana -- $X\sim Poiss(\lambda=60)$ 
 
 ---
 
 # Actividad 5
 
-El departamento de I+D de la empresa que fabrica las baterías tipo B está investigando nuevos materiales y métodos para mejorar la vida útil de las baterías. En particular, quieren llegar a diseñar una batería cuya duración siga una distribución de Weibull con parámetros a = 100 y b = 185.
+El departamento de I+D de la empresa que fabrica las baterías tipo B está investigando nuevos materiales y métodos para mejorar la vida útil de las baterías. En particular, quieren llegar a diseñar una batería cuya duración siga una distribución de Weibull con parámetros *a = 100* y *b = 185*.
 
 * Realiza una simulación de la producción semanal de baterías (recuerda: 5 días de produccción, a 1000 baterías por día). Guarda los datos en un vector.
 
@@ -367,31 +386,38 @@ El departamento de I+D de la empresa que fabrica las baterías tipo B está inve
 simulacion<-rweibull(5000,100,185)
 ```
 
-* Con este nuevo proceso, ¿se mejora realmente la duración media de las baterías? (ayuda: puedes usar los datos simulados o la expresión de la esperanza de una Weibull)
+* Con este nuevo proceso, ¿se mejora realmente la duración media de las baterías?
 
 
-Si recordamos del ejercicio 2 en el que hallamos la media de tiempo de vida de las baterías de tipo B nos dio un resultado $\mu=$ `r mediaB`. Si calculamos la media de los datos simulados:
+En la actividad 2 hallamos la media del tiempo de vida de las baterías de tipo B: $\mu=$ `r mediaB`. Si calculamos la media de los datos simulados:
 
 ```{r echo=TRUE,results='hide'}
-mediaB_Weibull<-mean(simulacion)
+mediaB_Weibull<-round(mean(simulacion),3)
+dif_mean<-round(mediaB_Weibull-mediaB,3)
 ```
 
-Podremos notar que : $\mu_w =$ `r mediaB_Weibull` y $\mu_2=$ `r mediaB` comparando los resultados vemos que siguiendo una distribución de Weibull aumentamos la vida media de las baterías de tipo B.
+Obtenemos que $\mu_w =$ `r mediaB_Weibull` y $\mu_2=$ `r mediaB`. Comparando los resultados, vemos que siguiendo una distribución de Weibull aumentamos la vida media de las baterías de tipo B en `r dif_mean`.
+
 
 * Los ingenieros no lo tienen muy claro (parece que la diferencia no es tanta en promedio y los nuevos materiales son costosos). Para demostrarles que merece la pena, calcula la proporción de baterías defectuosas que producirá probablemente el nuevo proceso y compárala con el anterior.
 
-Siguiendo con el criterio de la actividad 2 sabemos que una batería es defectuosa cuando dura menos de 175 horas. Además se calculó esa probabilidad $p=$ `r p` de que una batería del conjunto B durara menos de 175 horas.
+Siguiendo el criterio de la actividad 2, consideramos que una batería es defectuosa cuando dura menos de 175 horas. Además, se calculó la probabilidad $p=$ `r p_175_B` de que una batería del conjunto B durara menos de 175 horas.
 
-Si en nuestra simulación$X\sim We(a=100,b=185)$ calculamos:
+Si en nuestra simulación $X\sim We(a=100,b=185)$, calculamos:
 
 ```{r echo=TRUE,results='hide'}
 pWeibull<-pweibull(174,100,185)
+porc_Weibull<-round(pWeibull*100,3)
+dif_porc = round((pWeibull-p_175_B)*100,3)
 ```
 
-$P[X<175]=P[X\leq174]=$ `r pWeibull`
+$P[X<175]=P[X\leq174]=$ `r pWeibull` (`r porc_Weibull`%).
 
 
-Si comparamos con los resultados del ejercicio 2 vemos que $p_2=$ `r p` y $p_w=$ `r pWeibull` lo que implica que con una distribución de Weibull la proporción de batería defectuosas es del `r pWeibull*100`% que es más pequeño que en el caso del ejercicio 2 `r p*100`%
+
+Si comparamos con los resultados de la actividad 2, vemos que $p_2=$ `r p_175_B` y $p_w=$ `r pWeibull`, lo que implica que con una distribución de Weibull la proporción de baterías defectuosas es del `r porc_Weibull`%, un valor más pequeño que el del caso de la actividad 2 (`r porc_175_B`%).
+
+Queda demostrado que, con el nuevo proceso, el porcentaje de baterías defectuosas disminuye en un `r dif_porc`% .
 
 ---
 
