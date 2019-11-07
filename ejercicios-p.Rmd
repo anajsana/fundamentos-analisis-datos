@@ -34,8 +34,10 @@ kable(head(datos,5),caption = "Conjunto de datos - primeras 5 filas")
 kable(tail(datos,5),caption = "Conjunto de datos - últimas 5 filas")
 ```
 
-# Actividad 1
 ***
+
+# Actividad 1
+
 
 Realiza un histograma de todas las filas de la variable lifetime y comprueba que efectivamente nos interesa separar los datos
 
@@ -382,9 +384,12 @@ El departamento de I+D de la empresa que fabrica las baterías tipo B está inve
 
 * Realiza una simulación de la producción semanal de baterías (recuerda: 5 días de produccción, a 1000 baterías por día). Guarda los datos en un vector.
 
+Nos valemos de la función "rweibull", que toma como parámetros el número de observaciones (5x1000 baterías), y los parámetros a y b:
+
 ```{r echo=TRUE,results='hide'}
 simulacion<-rweibull(5000,100,185)
 ```
+
 
 * Con este nuevo proceso, ¿se mejora realmente la duración media de las baterías?
 
@@ -412,8 +417,6 @@ dif_porc = round((pWeibull-p_175_B)*100,3)
 ```
 
 $P[X<175]=P[X\leq174]=$ `r pWeibull` (`r porc_Weibull`%).
-
-
 
 Si comparamos con los resultados de la actividad 2, vemos que $p_2=$ `r p_175_B` y $p_w=$ `r pWeibull`, lo que implica que con una distribución de Weibull la proporción de baterías defectuosas es del `r porc_Weibull`%, un valor más pequeño que el del caso de la actividad 2 (`r porc_175_B`%).
 
