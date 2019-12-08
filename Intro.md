@@ -8,9 +8,9 @@ El data set que hemos elegido proviene de una encuesta realizada por la PSA (Phi
 
 * Gastos
 * Datos demográficos de familias
-* Datos demográficos de la persona principal en la toma de decisiones 
+* Datos demográficos de la persona principal en la toma de decisiones
 * Estructura de la casa
-# Número de bienes adquiridos
+* Número de bienes adquiridos
 
 
 ## Motivación y target
