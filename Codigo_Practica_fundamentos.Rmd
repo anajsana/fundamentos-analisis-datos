@@ -1,0 +1,492 @@
+#NOTA IMPORTANTE: PARA NO HACER EL MONGOLO, DEBEMOS DIVIDIR EL DATASET EN TRAIN Y TEST NADA MÁS EMPEZAR (70 30)
+
+# Pre-análisis del dataset filipinos:
+```{r}
+#----Cargamos las librerias necesarias----
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(forcats)
+library(GGally)
+library(gridExtra)
+library(egg)
+library(VIM)
+library(vcd)
+library(Hmisc)
+library(readr)
+library(moments)
+library(caret)
+library(gmodels)
+
+#----Carga de datos----
+
+datos<-read.csv(file.choose())
+datos<-datos%>%select(-Agricultural.Household.indicator,-Members.with.age.less.than.5.year.old,-Members.with.age.5...17.years.old
+                      ,-Household.Head.Occupation)
+
+```
+
+```{r}
+
+#-------transformamos aquellas variables que no tienen sentido que sean numéricas a factores
+datos$Electricity<-as.factor(datos$Electricity)
+datos$Number.of.bedrooms<-as.factor(datos$Number.of.bedrooms)
+datos$Number.of.Refrigerator.Freezer<-as.factor(datos$Number.of.Refrigerator.Freezer)
+datos$Number.of.Washing.Machine<-as.factor(datos$Number.of.Washing.Machine)
+datos$Number.of.Airconditioner<-as.factor(datos$Number.of.Airconditioner)
+datos$Number.of.Car..Jeep..Van<-as.factor(datos$Number.of.Car..Jeep..Van)
+datos$Number.of.CD.VCD.DVD<-as.factor(datos$Number.of.CD.VCD.DVD)
+datos$Number.of.Cellular.phone<-as.factor(datos$Number.of.Cellular.phone)
+datos$Number.of.Component.Stereo.set<-as.factor(datos$Number.of.Component.Stereo.set)
+datos$Number.of.Landline.wireless.telephones<-as.factor(datos$Number.of.Landline.wireless.telephones)
+datos$Number.of.Personal.Computer<-as.factor(datos$Number.of.Personal.Computer)
+datos$Number.of.Motorcycle.Tricycle<-as.factor(datos$Number.of.Motorcycle.Tricycle)
+datos$Number.of.Stove.with.Oven.Gas.Range<-as.factor(datos$Number.of.Stove.with.Oven.Gas.Range)
+datos$Number.of.Television<-as.factor(datos$Number.of.Television)
+datos$Number.of.Motorized.Banca<-as.factor(datos$Number.of.Motorized.Banca)
+```
+
+
+## Detención, tratamiento e imputación de datos faltantes
+
+```{r}
+# datos_a_categoricas<- datos%>%select_if(is.factor)
+# datos_a_numericas<- datos%>%select_if(is.numeric)
+
+#----Corregimos valores en variables----
+# En este trozo vamos a ir variable a variable imputando NA cuando creamos que sea necesario y ordenando los factores
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Main.Source.of.Income)
+summary(datos$Main.Source.of.Income)
+datos$Main.Source.of.Income = factor(datos$Main.Source.of.Income,ordered=TRUE,levels=(c('Other sources of Income'
+                                                                            , 'Enterpreneurial Activities'
+                                                                            , 'Wage/Salaries')))
+levels(datos$Main.Source.of.Income)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Household.Head.Marital.Status)
+summary(datos$Household.Head.Marital.Status)
+datos$Household.Head.Marital.Status[which(datos$Household.Head.Marital.Status=='Unknown')] <-NA # Imputamos NA
+datos$Household.Head.Marital.Status<-fct_drop(datos$Household.Head.Marital.Status) #Eliminamos el Unkown
+levels(datos$Household.Head.Marital.Status)
+datos$Household.Head.Marital.Status = 
+  factor(datos$Household.Head.Marital.Status,ordered=TRUE,levels=
+           (c('Single'
+              ,'Widowed'
+              ,'Annulled'
+              ,'Divorced/Separated'
+              ,'Married')))
+levels(datos$Household.Head.Marital.Status)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Household.Head.Class.of.Worker)
+summary(datos$Household.Head.Class.of.Worker)
+datos$Household.Head.Class.of.Worker = 
+  factor(datos$Household.Head.Class.of.Worker,ordered=TRUE,levels=
+           (c('Worked without pay in own family-operated farm or business'
+              ,'Employer in own family-operated farm or business'
+              ,'Worked with pay in own family-operated farm or business'
+              ,'Self-employed wihout any employee'
+              ,'Worked for private household'
+              ,'Worked for private establishment'
+              ,'Worked for government/government corporation')))
+levels(datos$Household.Head.Class.of.Worker)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Type.of.Household)
+datos$Type.of.Household = 
+  factor(datos$Type.of.Household,ordered=TRUE,levels=
+           (c('Single Family'
+              ,'Two or More Nonrelated Persons/Members'
+              ,'Extended Family')))
+levels(datos$Type.of.Household)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Type.of.Building.House)
+datos$Type.of.Building.House = 
+  factor(datos$Type.of.Building.House,ordered=TRUE,levels=
+           (c('Other building unit (e.g. cave, boat)'
+              ,'Institutional living quarter'
+              ,'Commercial/industrial/agricultural building'
+              ,'Single house'
+              ,'Duplex'
+              ,'Multi-unit residential')))
+levels(datos$Type.of.Building.House)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Type.of.Roof)
+summary(datos$Type.of.Roof)
+datos$Type.of.Roof[which(datos$Type.of.Roof=='Not Applicable')] <-NA # Imputamos NA
+datos$Type.of.Roof<-fct_drop(datos$Type.of.Roof)#Eliminamos no aplicable
+levels(datos$Type.of.Roof)
+summary(datos$Type.of.Roof)
+datos$Type.of.Roof = 
+  factor(datos$Type.of.Roof,ordered=TRUE,levels=
+           (c('Salvaged/makeshift materials'
+              ,'Light material (cogon,nipa,anahaw)'
+              ,'Mixed but predominantly salvaged materials'
+              ,'Mixed but predominantly light materials'
+              ,'Mixed but predominantly strong materials'
+              ,'Strong material(galvanized,iron,al,tile,concrete,brick,stone,asbestos)')))
+levels(datos$Type.of.Roof)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Type.of.Walls)
+summary(datos$Type.of.Walls)
+datos$Type.of.Walls[which(datos$Type.of.Walls=='NOt applicable')] <-NA # Imputamos NA
+datos$Type.of.Walls<-fct_drop(datos$Type.of.Walls)#Eliminamos no aplicable
+levels(datos$Type.of.Walls)
+summary(datos$Type.of.Walls)
+
+datos$Type.of.Walls= 
+  factor(datos$Type.of.Walls,ordered=TRUE,levels=
+           (c('Salvaged'
+              ,'Very Light'
+              ,'Light'
+              ,'Strong'
+              ,'Quite Strong')))
+levels(datos$Type.of.Walls)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Toilet.Facilities)
+summary(datos$Toilet.Facilities)
+datos$Toilet.Facilities= 
+  factor(datos$Toilet.Facilities,ordered=TRUE,levels=
+           (c('None'
+              ,'Others'
+              ,'Open pit'
+              ,'Closed pit'
+              ,'Water-sealed, other depository, shared with other household'
+              ,'Water-sealed, other depository, used exclusively by household'
+              ,'Water-sealed, sewer septic tank, shared with other household'
+              ,'Water-sealed, sewer septic tank, used exclusively by household')))
+levels(datos$Toilet.Facilities)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+levels(datos$Household.Head.Occupation)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Main.Source.of.Water.Supply)
+datos$Main.Source.of.Water.Supply= 
+  factor(datos$Main.Source.of.Water.Supply,ordered=TRUE,levels=
+           (c('Others'
+              ,'Dug well'
+              ,'Lake, river, rain and others'
+              ,'Unprotected spring, river, stream, etc'
+              ,'Protected spring, river, stream, etc'
+              ,'Tubed/piped shallow well'
+              ,'Shared, tubed/piped deep well'
+              ,'Own use, tubed/piped deep well'
+              ,'Peddler'
+              ,'Shared, faucet, community water system'
+              ,'Own use, faucet, community water system')))
+levels(datos$Main.Source.of.Water.Supply)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Tenure.Status)
+datos$Tenure.Status[which(datos$Tenure.Status=='Not Applicable')] <-NA # Imputamos NA
+datos$Tenure.Status<-fct_drop(datos$Tenure.Status)#Eliminamos no aplicable
+levels(datos$Tenure.Status)
+summary(datos$Tenure.Status)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Electricity) # Mirar que es 0 o 1... Seguramente sea 0 sin electricidad 1 con electricidad pero habría que corroborar
+summary(datos$Electricity)
+# ¿Cómo lo distinguimos?
+ggplot(datos, aes(x=Number.of.Airconditioner,fill= Electricity)) + geom_bar(position = "dodge")
+# Vemos en la gráfica que hay muchos usuarios que tienen aire acondicionado y tienen un 1 en Electricity por lo que 
+# 1 es con electricidad y 0 es sin electricidad
+datos$Electricity = 
+  factor(datos$Electricity,ordered=TRUE,levels=
+           (c('0','1')))
+
+```
+
+```{r}
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.bedrooms)
+summary(datos$Number.of.bedrooms)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Refrigerator.Freezer)
+summary(datos$Number.of.Refrigerator.Freezer)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Washing.Machine)
+summary(datos$Number.of.Washing.Machine)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Airconditioner)
+summary(datos$Number.of.Airconditioner)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Car..Jeep..Van)
+summary(datos$Number.of.Car..Jeep..Van)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.CD.VCD.DVD)
+summary(datos$Number.of.CD.VCD.DVD)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Cellular.phone)
+summary(datos$Number.of.Cellular.phone)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Component.Stereo.set)
+summary(datos$Number.of.Component.Stereo.set)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Landline.wireless.telephones)
+summary(datos$Number.of.Landline.wireless.telephones)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Personal.Computer)
+summary(datos$Number.of.Personal.Computer)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Motorcycle.Tricycle)
+summary(datos$Number.of.Motorcycle.Tricycle)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Stove.with.Oven.Gas.Range)
+summary(datos$Number.of.Stove.with.Oven.Gas.Range)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Television)
+summary(datos$Number.of.Television)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Motorized.Banca)
+summary(datos$Number.of.Motorized.Banca)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+#Ahora miramos las variables numericas
+
+# variables_categoricas<- datos%>%select_if(is.factor)
+# variables_numericas<- datos%>%select_if(is.numeric)
+# datos%>%select(Total.Household.Income==0)
+# datos[which(datos$Total.Rice.Expenditure==0)[1],]
+```
+## Análisis exploratorio inicial
+```{r}
+#-----Creamos una muestra de nuestros datos con muestreo aleatorio simple sin reemplazamiento-----
+
+# Como son demasiadas observaciones hacemos un muestreo de 2000, pero debemos fijar la semilla aleatoria
+# para analizar todos las mismas 2000 observaciones
+
+set.seed(300)
+datos_s <- datos %>%
+  sample_n(size=2000,replace=FALSE)
+
+# Dividimos el dataset en Train y Test 70% - 30%
+
+training <- createDataPartition(pull(datos_s, Total.Household.Income ),
+                                p = 0.7, list = FALSE, times = 1)
+datos_training <- slice(datos_s, training)
+datos_testing <- slice(datos_s, -training)
+
+var_train_cat<- datos_training%>%select_if(is.factor)
+var_train_num<- datos_training%>%select_if(is.numeric)
+```
+
+```{r}
+#-----correlation heatmap y correlation matrix----------
+cornums <- round(cor(var_train_num),50)
+# variables num con a correlación > a 0.5 respecto a income
+
+# Total.food.Expenditure
+# Meat.Exoenditure
+# Restaurants.and.Hotels.Expenditure
+# Clothing.Expenditure
+# Housing.and.Water.Expenditure
+# Imputed.House.rental.value
+# Transportation.expenditure
+# Communitcation.expenditure
+# Education.expenditure
+# Goods.and.services.expenditure
+
+melted_nums <- melt(cornums)
+ggplot(data = melted_nums, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
+
+```
+
+```{r}
+#--------niveles de correlación entre variables numéricas-----------
+var_train_num %>% select(1:27) %>%
+  na.omit() %>%
+  ggpairs(columns = 1:27, ggplot2::aes())
+```
+
+```{r}
+#-----Realizamos un resumen numérico de las variables----------
+
+head(datos_training)
+summary(datos_training)
+str(datos_training)
+describe(datos_training)
+```
+
+```{r}
+#----EDA----
+
+#Divido dataset en numéricas y categóricas
+
+# datos_a_categoricas<- datos_a%>%select_if(is.factor)
+# datos_a_numericas<- datos_a%>%select_if(is.numeric)
+# 
+# summary(datos_a_numericas)
+# str(datos_a_numericas)
+
+#Observamos la distribución de la variable Income y vemos que necesita de una transformación
+
+# datos_a_numericas$Total.Household.Income<-log(datos_a$Total.Household.Income)
+# 
+# ggplot(datos_a_numericas, aes(x = Total.Household.Income)) +
+#   geom_histogram(fill="orange", colour="black") +
+#   ggtitle('Histograma para el Income')+xlab('Total Income')
+# 
+# datos_a_numericas$House.Floor.Area<-log(datos_a$House.Floor.Area) # Esta variable se necesita transformar o categorizar??
+
+# Enfrentamos area con income
+
+# ggplot(datos_a_numericas, aes(x = House.Floor.Area, y=Total.Household.Income)) +
+#   geom_point() +
+#   ggtitle('Scatter plot para el Income')+xlab('Floor Area')+ylab('House hold income')+geom_smooth(method = 'lm')
+
+# datos_a_numericas$House.Age<-sqrt(datos_a$House.Age)
+# Enfrentamos Age con income
+# ggplot(datos_a_numericas, aes(x = House.Age, y=Total.Household.Income)) +
+#   geom_point() +
+#   ggtitle('Scatter plot para el Income')+xlab('House Age')+ylab('House hold income')+geom_smooth(method = 'lm')
+
+# datos_a %>%
+#   group_by(Number.of.bedrooms) %>%
+#   summarize(avg_income = median(Total.Household.Income)) %>%
+#   ggplot(aes(x = avg_income, y = reorder(Number.of.bedrooms, avg_income))) + 
+#   geom_point(size = 5)
+
+# datos_a$Number.of.bedrooms<-as.factor(datos_a$Number.of.bedrooms)
+# ggplot(datos_a, aes(x = Total.Household.Income, fill = Number.of.bedrooms))+
+#   geom_dotplot(binwidth = 20000, stackgroups = TRUE, binpositions="all")
+
+#----Detección e imputación de datos faltantes----
+
+
+aggr_plot<-aggr(var_train_num
+                ,numbers=TRUE,sortVars=TRUE,
+                labels=names(var_train_num)
+                ,cex.axis=.7,gap=3
+                ,ylab=c('Histograma de datos faltantes','Patrones de datos faltantes'))
+aggr_plot<-aggr(var_train_cat
+                ,numbers=TRUE,sortVars=TRUE,
+                labels=names(var_train_cat)
+                ,cex.axis=.7,gap=3
+                ,ylab=c('Histograma de datos faltantes','Patrones de datos faltantes'))
+#Tabla de contingencias de las variables a imputar
+table_pre_Tenure<-prop.table(table(var_train_cat$Tenure.Status))
+table_pre_Worker<-prop.table(table(var_train_cat$Household.Head.Class.of.Worker))
+var_train_cat$Tenure.Status<-VIM::kNN(var_train_cat,variable='Tenure.Status')%>%select(Tenure.Status)
+var_train_cat$Household.Head.Class.of.Worker<-VIM::kNN(var_train_cat,variable='Household.Head.Class.of.Worker')%>%select(Household.Head.Class.of.Worker)
+table_pos_Tenure<-prop.table(table(var_train_cat$Tenure.Status))
+table_pos_Worker<-prop.table(table(var_train_cat$Household.Head.Class.of.Worker))
+
+#Comprobamos
+
+table_pos_Tenure-table_pre_Tenure
+table_pos_Worker-table_pre_Worker
+
+# Con la resta de las tablas ves verdaderamente a que datos se están imputando (los positivos)
+# y como se ven afectadas las proporciones, aumentando o disminuyendo un poco.
+```
+## Procesado variables cualitativas
+
+```{r}
+#-------Frecuencias absolutas y relativas------
+# La función table() es una tabla de contingencia (frecuencias absolutas)
+
+table(var_train_cat$Region)
+table(var_train_cat$Main.Source.of.Income)
+table(var_train_cat$Household.Head.Sex)
+table(var_train_cat$Household.Head.Marital.Status)
+table(var_train_cat$Household.Head.Job.or.Business.Indicator)
+table(var_train_cat$Household.Head.Class.of.Worker)
+table(var_train_cat$Type.of.Household)
+table(var_train_cat$Type.of.Building.House)
+table(var_train_cat$Type.of.Roof)
+table(var_train_cat$Type.of.Walls)
+table(var_train_cat$Number.of.bedrooms)
+table(var_train_cat$Tenure.Status)
+table(var_train_cat$Toilet.Facilities)
+table(var_train_cat$Electricity)
+table(var_train_cat$Electricity)
+table(var_train_cat$Main.Source.of.Water.Supply)
+table(var_train_cat$Number.of.Television)
+table(var_train_cat$Number.of.Television)
+table(var_train_cat$Number.of.CD.VCD.DVD)
+table(var_train_cat$Number.of.Component.Stereo.set)
+table(var_train_cat$Number.of.Refrigerator.Freezer)
+table(var_train_cat$Number.of.Washing.Machine)
+table(var_train_cat$Number.of.Airconditioner)
+table(var_train_cat$Number.of.Car..Jeep..Van)
+table(var_train_cat$Number.of.Landline.wireless.telephones)
+table(var_train_cat$Number.of.Cellular.phone)
+table(var_train_cat$Number.of.Personal.Computer)
+table(var_train_cat$Number.of.Stove.with.Oven.Gas.Range)
+table(var_train_cat$Number.of.Motorized.Banca)
+table(var_train_cat$Number.of.Motorcycle.Tricycle)
+table(var_train_cat$Household.Head.Highest.Grade.Completed)
+
+# Con prop.table sacamos las relativas
+prop.table(table(var_train_cat$Region))
+prop.table(table(var_train_cat$Main.Source.of.Income))
+prop.table(table(var_train_cat$Household.Head.Sex))
+prop.table(table(var_train_cat$Household.Head.Marital.Status))
+prop.table(table(var_train_cat$Household.Head.Job.or.Business.Indicator))
+prop.table(table(var_train_cat$Household.Head.Class.of.Worker))
+prop.table(table(var_train_cat$Type.of.Household))
+prop.table(table(var_train_cat$Type.of.Building.House))
+prop.table(table(var_train_cat$Type.of.Roof))
+prop.table(table(var_train_cat$Type.of.Walls))
+prop.table(table(var_train_cat$Number.of.bedrooms))
+prop.table(table(var_train_cat$Tenure.Status))
+prop.table(table(var_train_cat$Toilet.Facilities))
+prop.table(table(var_train_cat$Electricity))
+prop.table(table(var_train_cat$Electricity))
+prop.table(table(var_train_cat$Main.Source.of.Water.Supply))
+prop.table(table(var_train_cat$Number.of.Television))
+prop.table(table(var_train_cat$Number.of.Television))
+prop.table(table(var_train_cat$Number.of.CD.VCD.DVD))
+prop.table(table(var_train_cat$Number.of.Component.Stereo.set))
+prop.table(table(var_train_cat$Number.of.Refrigerator.Freezer))
+prop.table(table(var_train_cat$Number.of.Washing.Machine))
+prop.table(table(var_train_cat$Number.of.Airconditioner))
+prop.table(table(var_train_cat$Number.of.Car..Jeep..Van))
+prop.table(table(var_train_cat$Number.of.Landline.wireless.telephones))
+prop.table(table(var_train_cat$Number.of.Cellular.phone))
+prop.table(table(var_train_cat$Number.of.Personal.Computer))
+prop.table(table(var_train_cat$Number.of.Stove.with.Oven.Gas.Range))
+prop.table(table(var_train_cat$Number.of.Motorized.Banca))
+prop.table(table(var_train_cat$Number.of.Motorcycle.Tricycle))
+prop.table(table(var_train_cat$Household.Head.Highest.Grade.Completed))
+
+```
+
+```{r}
+# cross-table para comparación de frecuencias de dos variables categóricas
+    #Frecuencias absolutas
+    #Frecuencias relativas en relación a la fila
+    #Frecuencias relativas en relación a la columna
+    #Frecuencias relativas globales
+
+# Quiero comparar la variable electricity por regiones, ya que nos puede dar una idea rápida 
+# de en qué regiones puede existir mayor nivel de probleza (ya que tener elecricidad es un 
+# bien básico de calidad de vida)
+
+CrossTable(var_train_cat$Region, var_train_cat$Electricity, prop.chisq = FALSE)
+CrossTable(var_train_cat$Household.Head.Class.of.Worker, var_train_cat$Number.of.Stove.with.Oven.Gas.Range, prop.chisq = FALSE)
+```
+
+```{r}
+#----------estudio frecuencias multidimensionales----------------
+
+# Analizamos la variable electricity y region filtranto por si la persona qu etoma las decisiones en la casa es mujer u hombre
+ftable(var_train_cat$Region, var_train_cat$Household.Head.Sex, var_train_cat$Electricity)
+
+```
+
+```{r}
+#-------visualización de datos cualitativos
+
+barplot(table(var_train_cat$Region), col = c("lightblue","yellow", "cadetblue4"),
+        main = "Diagrama de barras de las frecuencias absolutas\n de la variable \"Region\"")
+
+barplot(table(var_train_cat$Household.Head.Sex, var_train_cat$Electricity),
+        beside = T, 
+        col = c("yellow", "lightblue"),
+        names = c("Women", "Men"), 
+        legend.text = c("No", "Yes"))
+
+barplot(prop.table(table(var_train_cat$Household.Head.Class.of.Worker,var_train_cat$Main.Source.of.Income)),
+        beside = TRUE, col = c("chocolate","cornsilk1","cornflowerblue","blueviolet", "darkgoldenrod1", "coral", "brown", "chartreuse4"),
+        legend.text = T, main = "Frecuencias relativas de fuente de\n ingresos por tipo de trabajo",
+        ylim = c(0,1))
+```
+
