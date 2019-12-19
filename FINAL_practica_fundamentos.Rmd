@@ -55,7 +55,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 
 # ----- Se cargan las librerías que serán necesarias ------
-----
 
 library(dplyr)
 library(tidyr)
@@ -1024,17 +1023,14 @@ Por ello, una buena opción es el método no lineal KNN (k nearest neighbors), e
 
 # Imputación de los valores NA usando el método no lineal kNN (k nearest neighbors)
 
-var_train_cat$Tenure.Status <- VIM::kNN(var_train_cat,variable='Tenure.Status')%>%select(Tenure.Status)
-var_train_cat$Household.Head.Class.of.Worker<-VIM::kNN(var_train_cat,variable='Household.Head.Class.of.Worker')%>%select(Household.Head.Class.of.Worker)
-var_train_cat$Type.of.Walls<-VIM::kNN(var_train_cat,variable='Type.of.Walls')%>%select(Type.of.Walls)
-var_train_cat$Type.of.Roof<-VIM::kNN(var_train_cat,variable='Type.of.Roof')%>%select(Type.of.Roof)
-
-# Corrección de nombres de variables modificados al imputar
-
-names(var_train_cat)[7] <- "Household.Head.Class.of.Worker"
-names(var_train_cat)[10] <- "Type.of.Roof"
-names(var_train_cat)[11] <- "Type.of.Walls"
-names(var_train_cat)[12] <- "Tenure.Status"
+var_train_cat <- VIM::kNN(var_train_cat,variable='Tenure.Status',impNA=TRUE)
+var_train_cat$Tenure.Status_imp<-NULL
+var_train_cat <- VIM::kNN(var_train_cat,variable='Household.Head.Class.of.Worker',impNA=TRUE)
+var_train_cat$Household.Head.Class.of.Worker_imp<-NULL
+var_train_cat <- VIM::kNN(var_train_cat,variable='Type.of.Walls',impNA=TRUE)
+var_train_cat$Type.of.Walls_imp<-NULL
+var_train_cat <- VIM::kNN(var_train_cat,variable='Type.of.Roof',impNA=TRUE)
+var_train_cat$Type.of.Roof_imp<-NULL
 
 
 # Comprobación de que se han eliminado todos los NA del conjunto de variables categóricas
@@ -1878,12 +1874,6 @@ Variables_ordenadas<-data.frame(t(cor_mat_log)[,'Total.Household.Income']) # Es 
 colnames(Variables_ordenadas)<-'Coef. Corr'
 View(Variables_ordenadas)
 
-
-# Selección manual de variables
-
-rownames(Variables_ordenadas)
-
-
 ```
 
 
@@ -1892,46 +1882,55 @@ rownames(Variables_ordenadas)
 
 
 ```{r}
-
-
+# Se realiza la regresión lineal múltiple con las variables que previamente han tenido un valor de correlación superior a 0.5
 RLM<-lm(Total.Household.Income~Transportation.Expenditure
           +Clothing..Footwear.and.Other.Wear.Expenditure
           +Fruit.Expenditure
           ,data=new_var_train_log)
 
 residuos <- rstandard(RLM)
+# En la siguiente línea calcularemos los valores "predichos"= ajustados pero con los datos de training
+# Esto puedo no tener sentido, pero se hace en muchos sitios observar que los residuos tienden a la normalidad
 valores.ajustados <- fitted(RLM)
+# Verificamos que los valores predichos y los residuos no tienen realción lineal
 plot(valores.ajustados, residuos)
+# Obtenemos los betas estimados en la regresión lineal múltiple
 summary(RLM)
 
+```
+
+```{r}
+# Para comprobar que el resultado es correcto observamos en la siguiente gráfica si los residuos siguen una distribución normal. Para ello representamos el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta mejor
 qqnorm(residuos)
 qqline(residuos)
+```
 
 
-# ¡OJO! HAY QUE TENER EN CUENTA QUE LOS DATOS DE TEST/VALIDACIÓN NO ESTÁN TRANSFORMADOS, POR LO QUE HAY QUE HACERLO
-
+```{r}
+# Del conjunto de test se seleccionan las variables necesarias
 pre_datos_testing<-datos_testing%>%select(Transportation.Expenditure
           ,Clothing..Footwear.and.Other.Wear.Expenditure
         ,Fruit.Expenditure)
-
+# Es necesario transformar logarítmicamente el conjunto de test antes de usarlo para validar
 pre_datos_testing<-log(pre_datos_testing)
-
+# Quitamos posibles valores inf
 pre_datos_testing <- replace(pre_datos_testing,pre_datos_testing=="-Inf",0) 
-
+# Realizamos la predicción con nuestro modelo de RLM calculado
 ic <- predict(RLM,pre_datos_testing)
-
+# Obtenermos en un vector los valores reales para compararlos con los predichos. Para ello, calcularemos sus residuos
 Valores_reales<-log(datos_testing$Total.Household.Income)
 
 Valores_predichos<-ic
-
+# Calculamos los residuos
 residuos<-Valores_reales-Valores_predichos
+# Comprobamos que no existe ninguna relación lineal entre los valores predichos por el modelo y los residuos hallados
+plot(Valores_predichos,residuos)
 
-plot(Valrores_predichos,residuos)
+```
 
+```{r}
+# Para comprobar que el resultado es correcto observamos en la siguiente gráfica si los residuos siguen una distribución normal. Para ello representamos el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta mejor
 qqnorm(residuos)
-
 qqline(residuos)
-
-
 ```
 
