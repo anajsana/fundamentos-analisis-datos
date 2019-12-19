@@ -6,14 +6,14 @@ output: pdf_document
 # Fundamentos análisis de datos - Práctica final
 
 **David Durán Prieto**
-**Gerardo Aguilar**
+**Gerardo Adrián Aguirre Vivar**
 **Ana Jiménez Santamaría**
 
 ***
 
 ## 1. Contexto
 
-El data set que hemos elegido proviene de una encuesta realizada por la PSA (Philippine Statistics Authority) donde se muestran los gastos e ingresos por familia en las islas Filipinas. Contiene 40k observaciones y 60 variables que hemos agrupado en las siguientes categorías:
+El data set que ha sido elegido proviene de una encuesta realizada por la PSA (Philippine Statistics Authority) donde se recogen los gastos e ingresos por familia en las Islas Filipinas. Contiene más de 40000 observaciones y 60 variables, que han sido agrupadas en las siguientes categorías:
 
 * Gastos
 * Datos demográficos de familias
@@ -21,33 +21,32 @@ El data set que hemos elegido proviene de una encuesta realizada por la PSA (Phi
 * Estructura de la casa
 * Número de bienes adquiridos
 
-Identificar un modelo de clasificación socio-económicos óptimo en Filipinas ha sido un tema difícil de abordar durante varios años. A día de hoy, ningun modelo ha sido aceptado de forma global, y los diferentes organismos gubernamentales que existen utilizan sus propios modelos.
+Durante varios años, identificar un modelo de clasificación socio-económico óptimo en Filipinas ha sido un tema difícil de abordar. A día de hoy, ningun modelo ha sido aceptado de forma global, y los diferentes organismos gubernamentales que existen utilizan sus propios modelos. Por ello, el presente trabajo se plantea un objetivo: diseñar un modelo que consiga abordar el problema y resolverlo de manera eficaz.
 
 ## 2. Objetivo - Pregunta - Target
 
-*Objetivo*: Predecir los ingresos de una familia filipina
-*Pregunta*: Basándonos en un modelo de regresión múltiple ¿Qué variables son las  más óptimas para predecir los ingresos de una familia Filipina?
-*Target* : Nuestra variable respuesta es el income de familias filipinas (Total.Household.Income) 
+*Objetivo*: Predecir los ingresos de una familia filipina, basándse en los datos disponibles.
+*Pregunta*: A partir de un modelo de regresión lineal múltiple, ¿qué variables son las más adecuadas para predecir los ingresos?
+*Target* : La variable respuesta es el total de ingresos de cada familia filipina (Total.Household.Income) 
 
 ## 3. Procedimiento
 
-El análisis de dividirá en dos fases. La primera fase consistirá en un análisis exploratorio de los datos para entender mejor el significado y la relevancia de cada una de nuestras variables. Estudiaremos puntos clave como el nivel de correlación entre nuestra variable de interés y las demás variables.
+El análisis de dividirá en dos fases:
 
-Por ello, para cada variable estudiada, nos preguntaremos:
+* La primera fase consistirá en un análisis exploratorio de los datos para entender mejor el significado y la relevancia de cada una de las variables. Se estudiarán puntos clave como el nivel de correlación entre la variable de interés y las demás. Por ello, para cada variable estudiada, se planteará:
 
-* ¿Consideramos esta variable cuando intentamos predecir los ingresos familiares?
-* Si es así ¿Cómo de relevante es esta variable en determinar nuestra variable respuesta?
+    * ¿Se considerará esta variable al predecir los ingresos familiares? Es decir, ¿formará parte del modelo diseñado?
+    * Si es así, ¿cómo de relevante es esta variable a la hora de determinar la variable respuesta?
 
-La segunda fase consistirá en la elaboración de un modelo de regresión lineal múltiple con las variables predictoras seleccionadas.
+* La segunda fase consistirá en la elaboración de un modelo de regresión lineal múltiple con las variables predictoras seleccionadas.
 
 ***
 ## 4. Análisis exploratorio de los datos
 
 ### 4.1. Procesado inicial
 
-Si bien es cierto que lo primero de todo sería proceder con el análisis exploratorio y visualizar nuestras variables gráficamente para tener un conocimiento general de nuestros datos, más adelante veremos que en nuestro data set, los datos no han sido recogidos de la forma más efectiva. Por lo que hemos decidido crear este apartado, donde procederemos a crear nuevas variables y resúmenes, reordenar observaciones , sacar una muestra representativa y dividir nuestros datos en test y training para facilitar el trabajo de los mismos.
+Antes de proceder con la visualización gráfica de las variables (para tener un visión de la distribución de nuestros datos), será realizado un preprocesamiento y limpieza del conjunto de datos. Serán etiquetados como NA aquellos valores que así deban considerarse; se eliminarán ciertas variables por no presentar interés para el objetivo planteado, y por último, seran preparados los conjuntos de test/validación y de train. Este último será el que sirva para entrenar el modelo de predicción, que será después evaluado con el conjunto de test/validación.
 
-Instalamos la librería y cargamos los datos para poder visualizarlos:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -55,7 +54,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 
-#----Cargamos las librerias necesarias----
+# ----- Se cargan las librerías que serán necesarias ------
+----
 
 library(dplyr)
 library(tidyr)
@@ -76,31 +76,23 @@ library(ggcorrplot)
 
 ```
 
-Visualizamos el data set con `read.csv`. En primer lugar, dentificamos el tipo de variables que tenemos: Nuestro data set consta 60 variables:
-
-*`31` variables numéricas continuas
-*`14` variables numéricas discretas
-*`15` variables categóricas
-
-Como mencionamos en la sección de **Objetivo**, nuestra variable respuesta es una variable numérica continua: `Total.Household.Income`, entonces, todas las demás variables, pasarán a ser variables predictoras del `Income`
-
-Por otro lado, realizamos un resumen de estadísticas principales de nuestras variables numéricas para ver su media, desviación típica, número total de muestras y valores faltanes en cada variable. Curiosamente, solo encontramos datos faltantes en las variables categóricas, que más adelante trataremos 
+A continuación, se realizará un resumen de los estadísticos principales de las variables numéricas para ver su media, desviación típica, número total de muestras y valores faltanes en cada variable. Curiosamente, solo se encuentran datos faltantes en las variables categóricas, que más adelante se tratarán.
 
 ```{r}
-#----Carga de datos----
+
+# ----- Carga de datos -----
 
 datos<-read.csv(file.choose())
-#datos<-read.csv('C:/Users/david.duran/Downloads/Family Income and Expenditure.csv',stringsAsFactors = TRUE)
 
-#-----Realizamos un resumen numérico de las variables---------
+# ----- Resumen numérico de las variables -----
 
 summary(datos)
 
-#---- vemos si en nuestra muestra existen datos faltantes-----
+# ----- Datos faltantes en el dataset -----
 
 describe(datos)
 
-#-----Analizamos el coeficiente de simetria de cada una de las variables numéricas----
+# ----- Coeficiente de simetria de cada una de las variables numéricas -----
 
 nums <- datos %>%
   select_if(is.numeric)
@@ -111,22 +103,24 @@ cat <- datos %>%
 
 ```
 
-Queremos recalcar que la documentación del data set era en algunos casos deficiente, impidiéndonos entender el significado de algunas variables (e.g Agricultural.Household.indicator). Por ello, decidimos eliminar aquellas variables que no tienen ningún sentido desde nuestra posición.
+A la luz de la escasa documentación referida al conjunto de datos, ha sido imposible descifrar el significado de algunas variables (por ejemplo, Agricultural.Household.indicator). Por ello, se decide eliminar aquellas cuya interpretación es desconocida.
 
 ```{r}
 
-# Eliminamos ciertas variables del dataset
+# ----- Eliminación de variables del dataset -----
 
 datos<-datos%>%select(-Agricultural.Household.indicator,-Members.with.age.less.than.5.year.old,-Members.with.age.5...17.years.old
                       ,-Household.Head.Occupation)
 ```
 
 
-A continuación, vamos a ir variable a variable etiquetando como NA cuando tengamos valores que consideraremos erróneos o no recogidos (missing values). Esos valores vendrán normalmente etiquetados por `unknown`, `not applicable` o `0`. Sin embargo, en este último caso hay que tener cuidado, ya que en este data set las variables pueden tener 0 debido al tipo de datos que son (valores socio económicos)
+Una vez descartadas aquellas variables, se irán etiquetando como NA todos aquellos valores considerados erróneos o no recogidos (missing values). Estos vendrán normalmente etiquetados por `unknown`, `not applicable` o `0`. Sin embargo, en este último caso es necesario tener cuidado, ya que algunas variables pueden tomar valor 0 y esto ser correcto, debido al tipo de datos que son (valores socio-económicos).
+
+Además, se categorizarán ciertas variables, seleccionando las posibles categorías que podrán adquirir.
 
 ```{r}
 
-#----Corregimos valores en variables----
+# -----Corrección de valores en variables y categorización -----
 
 levels(datos$Main.Source.of.Income)
 summary(datos$Main.Source.of.Income)
@@ -139,7 +133,7 @@ levels(datos$Main.Source.of.Income)
 
 levels(datos$Household.Head.Marital.Status)
 summary(datos$Household.Head.Marital.Status)
-datos$Household.Head.Marital.Status[which(datos$Household.Head.Marital.Status=='Unknown')] <-NA # Etiquetamos como NA el valor "Unknown" (desconocido)
+datos$Household.Head.Marital.Status[which(datos$Household.Head.Marital.Status=='Unknown')] <-NA # Se etiqueta como NA el valor "Unknown" (desconocido)
 datos$Household.Head.Marital.Status<-fct_drop(datos$Household.Head.Marital.Status)
 levels(datos$Household.Head.Marital.Status)
 datos$Household.Head.Marital.Status = 
@@ -193,7 +187,7 @@ levels(datos$Type.of.Building.House)
 
 levels(datos$Type.of.Roof)
 summary(datos$Type.of.Roof)
-datos$Type.of.Roof[which(datos$Type.of.Roof=='Not Applicable')] <-NA # Etiquetamos como NA el valor "Not Applicable" (no aplicable)
+datos$Type.of.Roof[which(datos$Type.of.Roof=='Not Applicable')] <-NA # Se etiqueta como NA el valor "Not Applicable" (no aplicable)
 datos$Type.of.Roof<-fct_drop(datos$Type.of.Roof)
 levels(datos$Type.of.Roof)
 summary(datos$Type.of.Roof)
@@ -211,7 +205,7 @@ levels(datos$Type.of.Roof)
 
 levels(datos$Type.of.Walls)
 summary(datos$Type.of.Walls)
-datos$Type.of.Walls[which(datos$Type.of.Walls=='Not applicable')] <-NA # Etiquetamos como NA el valor "Not Applicable" (no aplicable)
+datos$Type.of.Walls[which(datos$Type.of.Walls=='Not applicable')] <-NA # Se etiqueta como NA el valor "Not Applicable" (no aplicable)
 datos$Type.of.Walls<-fct_drop(datos$Type.of.Walls)
 levels(datos$Type.of.Walls)
 summary(datos$Type.of.Walls)
@@ -258,7 +252,7 @@ levels(datos$Main.Source.of.Water.Supply)
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 levels(datos$Tenure.Status)
-datos$Tenure.Status[which(datos$Tenure.Status=='Not Applicable')] <-NA # Etiquetamos como NA el valor "Not Applicable" (no aplicable)
+datos$Tenure.Status[which(datos$Tenure.Status=='Not Applicable')] <-NA # Se etiqueta como NA el valor "Not Applicable" (no aplicable)
 datos$Tenure.Status<-fct_drop(datos$Tenure.Status)
 levels(datos$Tenure.Status)
 summary(datos$Tenure.Status)
@@ -270,17 +264,20 @@ ggplot(datos, aes(x=Number.of.Airconditioner,fill= Electricity)) + geom_bar(posi
 
 ```
 
-La siguiente variable es un claro ejemplo de la importancia del `0`. Puesto que no tenemos ninguna descripción de las variables de nuestro data.set más allá del título, intentamos ver a qué se refiere esos `0`. Vemos en la gráfica que todos los usuarios que tienen aire acondicionado, tienen un 1 en Electricity, y que ningún usuario con un 0 tiene aire acondicionado, por lo que podemos afirmar que el 1 corresponde a tener electricidad y el 0 a no tenera. 
+La  variable "Electricity" es un claro ejemplo de la importancia de no tratar como NA valores iguales a `0`. Puesto que no existe ninguna descripción de las variables del dataset, más allá del propio nombre, se trata de ver a qué se refieren esos `0`. A la vista de la gráfica, se concluye que todos los usuarios que tienen aire acondicionado, tienen un 1 en Electricity, y que ningún usuario con un 0 tiene aire acondicionado, por lo que es posible afirmar que el 1 corresponde a tener electricidad, y el 0 a no tenerla. 
 
-Para clarificar, la categorizamos por `sí` y `no`
+
+Para clarificar, será categorizada con valores de "Si" y "No", que sustituirán a los unos y ceros, respectivamente.
 
 ```{r}
+
+# Sustitución de 0/1 por No/Si
 
 datos$Electricity[which(datos$Electricity=='0')] <- 'No'
 datos$Electricity[which(datos$Electricity=='1')] <- 'Si'
 
 
-# Transformamos la variable Electricity a categórica, por ser binaria (0 o 1 / No o Si)
+# Transformación de la variable Electricity a categórica, por ser binaria (0 o 1 / No o Si)
 
 
 datos$Electricity<-as.factor(datos$Electricity)
@@ -291,7 +288,7 @@ datos$Electricity =
 
 ```
 
-El ultimo grupo de nuestras variables, son número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus valores solo oscilan entre 0 a 5 o 4. Inspeccionamos más a fondo estas variables viendo la media por familia filipina de los diferentes bienes.
+El último grupo de variables, corresponde al número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus rangos son muy reducidos con respecto a las demás numéricas. Se inspecciona más a fondo estas variables viendo la media por familia filipina de los diferentes bienes.
 
 ```{r}
 #---------------------------------------------------------------------------------------------------------------------------------------------
@@ -340,19 +337,19 @@ summary(datos$Number.of.Motorized.Banca)
 
 ```
 
-Una vez tenemos nuestros datos ordenados, y debido a que el volumen de nuestra muestra puede ser un problema cuando tratemos con ellos, procedemos a realizar un muestreo de 10000 observaciones con muestreo aleatorio simple y fijando una semilla aleatoria.
+Una vez están los datos ordenados, y debido a que el volumen de la muestra inicial podría ser un problema al tratar con ellos, se procede a realizar un muestreo de 10000 observaciones con muestreo aleatorio simple, fijando una semilla aleatoria.
 
-Dividimos la muestra de 10000 observaciones en dos conjuntos: uno de Train y otro de Test 70% - 30%. Trabajaremos con el conjunto de train, mientras que el de test será reservado para la parte final (evaluación del modelo)
+Se divide la muestra de 10000 observaciones en dos conjuntos: uno de train y otro de test/validación (70%-30%). Se trabajará con el conjunto de train, mientras que el de test será reservado para la parte final (evaluación del modelo).
 
 ```{r}
 
-#-----Creamos una muestra de nuestros datos con muestreo aleatorio simple sin reemplazamiento-----
+# ----- Creación de una muestra del conjunto inicial de datos con muestreo aleatorio simple sin reemplazamiento -----
 
 set.seed(300)
 datos_s <- datos %>%
   sample_n(size=10000,replace=FALSE)
 
-# Dividimos la muestra de 10000 observaciones en dos conjuntos: uno de Train y otro de Test 70% - 30%
+# División de la muestra de 10000 observaciones en dos conjuntos: uno de train y otro de test (70%-30%)
 
 training <- createDataPartition(pull(datos_s, Total.Household.Income ),
                                 p = 0.7, list = FALSE, times = 1)
@@ -367,11 +364,14 @@ var_train_num <- datos_training%>%select_if(is.numeric)
 
 ### 4.2. Análisis variables cualitativas
 
-Para estudiar más a fondo nuestras variables cualitativas. Vamos a ver sus frecuendias absolutas de cada variable una a una con ayuda de la función `table()`
+Para estudiar más a fondo las variables cualitativas, es conveniente ver sus frecuencias absolutas, una a una, con ayuda de la función `table()`
 
 ```{r}
-#-------Frecuencias absolutas y relativas------
-# La función table() es una tabla de contingencia (frecuencias absolutas)
+
+# ----- Frecuencias absolutas y relativas ------
+
+# Frecuencias absolutas - función table() (tabla de contingencia)
+
 table(var_train_cat$Region)
 table(var_train_cat$Main.Source.of.Income)
 table(var_train_cat$Household.Head.Sex)
@@ -406,10 +406,12 @@ table(var_train_cat$Household.Head.Highest.Grade.Completed)
 
 ```
 
-Seguidamente, realizamos el mismo proceso para ver las frecuencias relativas, utilizando la función `prop.table()`
+Seguidamente, será repetido el mismo proceso para ver las frecuencias relativas, esta vez utilizando la función `prop.table()`
 
 ```{r}
-# Con prop.table sacamos las relativas
+
+# Frecuencias relativas - función prop.table
+
 prop.table(table(var_train_cat$Region))
 prop.table(table(var_train_cat$Main.Source.of.Income))
 prop.table(table(var_train_cat$Household.Head.Sex))
@@ -443,30 +445,38 @@ prop.table(table(var_train_cat$Number.of.Motorcycle.Tricycle))
 prop.table(table(var_train_cat$Household.Head.Highest.Grade.Completed))
 ```
 
-Tras echar un vistazo rápido al output, la variable categórica `electricity` nos llama la atención. Queremos comparar la variable electricity por regiones, ya que nos puede dar una idea rápida de en qué regiones puede existir mayor nivel de probleza.
-
-Utilizamos a función `cross-table` para ello, que nos mostrará las frecuencias absolutas, relativas en relación a la fila, frecuencias relativas en relación a la columna y frecuencias relativas globales
+Al examinar las visualizaciones, la variable categórica `electricity` llama la atención. Se procede a comparar la variable electricity por regiones, ya que puede dar una idea acerca de en qué regiones puede existir mayor nivel de pobreza. Esto se realiza mediante la función `cross-table`, que nos mostrará las frecuencias absolutas, relativas en relación a la fila, frecuencias relativas en relación a la columna y frecuencias relativas globales.
 
 ```{r}
+
 CrossTable(var_train_cat$Region, var_train_cat$Electricity, prop.chisq = FALSE)
 CrossTable(var_train_cat$Household.Head.Class.of.Worker, var_train_cat$Number.of.Stove.with.Oven.Gas.Range, prop.chisq = FALSE)
+
 ```
 
-Añadimos a nuestro análisis una tercera variable que encontramos interesante, la variable `Sex`, que indica el sexo de la persona que toma las decisiones en el hogar
+Se incorpora al análisis una tercera variable que suscita interés en el estudio: la variable `Sex`, que indica el sexo de la persona que toma las decisiones en el hogar.
 
 ```{r}
-#----------estudio frecuencias multidimensionales----------------
-# Analizamos la variable electricity y region filtranto por si la persona que toma las decisiones en la casa es hombre o mujer
+
+# ----- Estudio de frecuencias multidimensionales -----
+
+# Análisis de la variable electricity/región/sexo
+
 ftable(var_train_cat$Region, var_train_cat$Household.Head.Sex, var_train_cat$Electricity)
+
 ```
 
-Finalmente, visualizamos nuestos datos previos en los siguientes diagrama de barras:
+Finalmente, se muestra una serie de visualizaciones de los datos mediante diagramas de barras:
 
 ```{r}
-#-----------gráficos EDA con variables cualitativas individuales------------
+
+# ----- Gráficos EDA con variables cualitativas individuales -----
+
 ggplot(datos, aes(Region)) + geom_bar() + ggtitle("Núm. familias. por Región") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ggplot(datos, aes(Main.Source.of.Income)) + geom_bar() + ggtitle("Núm. familias. por fuente de ingresos")
-#-------visualización de datos cualitativos
+
+# ----- Visualización de datos cualitativos -----
+
 barplot(table(datos$Region), col = c("lightblue","yellow", "cadetblue4"),
         main = "Diagrama de barras de las frecuencias absolutas\n de la variable \"Region\"")
 barplot(table(datos$Household.Head.Sex, datos$Electricity),
@@ -478,15 +488,16 @@ barplot(prop.table(table(datos$Household.Head.Class.of.Worker,datos$Main.Source.
         beside = TRUE, col = c("chocolate","cornsilk1","cornflowerblue","blueviolet", "darkgoldenrod1", "coral", "brown", "chartreuse4"),
         legend.text = T, main = "Frecuencias relativas de fuente de\n ingresos por tipo de trabajo",
         ylim = c(0,1))
+
 ```
 
 ### 4.3. Análisis variables cuantitativas
 
-Nos disponemos a ver la distribución y densidad  de cada una de nuestras variables cuantitativas sin normalizar ni estandarizar, para identificar aquellas con los datos más sesgados 
+Se dispone a ver la distribución y densidad de cada una de las variables cuantitativas sin transformar, es decir, las variables "en crudo". De esta manera, se pretende identificar aquellas con los datos más sesgados, y poder observar las distribuciones y rangos que presentan.
 
 ```{r}
 
-# Histograma de las variables cuantitativas sin normalizar ni estandarizar
+# Histograma de las variables cuantitativas sin transformar
 
 summary(var_train_num$Total.Household.Income)
 qplot(var_train_num$Total.Household.Income,
@@ -912,15 +923,16 @@ qplot(var_train_num$Number.of.Motorcycle.Tricycle,
 
 ```
 
-Vemos que la mayoría de las variables están sesgadas a la derecha, una característica común cuanndo tratamos con datos socioeconómicos. A groso modo, podemos ver que algunas pueden normalizarse fácilmente aplicando cierta transformación a los datos de la variable. En el siguiente apartado trataremos este punto más a fondo
+Puede observarse que la mayoría de las variables están sesgadas a la derecha, una característica común cuando tratamos con datos socioeconómicos. A simple vista, muy pocas tienen una distribución simétrica, como sea el caso de la distribución normal de la variable "House.Age".
+
 
 ### 3. Representación datos cualitativos y cuantitativos
 
-Como parte final de nuestro análisi exploratorio de datos, mostramos algunas visualizaciones interesantes que muestran el tipo de población de una familia filipina en 2017. viendo estas gráficas, podemos ver que se trata de una población mayormente agraria, en donde abundan los trabajos de campo. Además podemos ver que las familias de la Región `NAT` son laquellas familias que más gastos hacen.
+Como parte final del análisis exploratorio de datos, se muestran algunas visualizaciones interesantes donde observar el tipo de población de una familia filipina en 2017. Viendo estas gráficas, podría afirmarse que se trata de una población mayormente agraria, en la que abundan los trabajos de campo. Además, las familias de la Región `NAT` son aquellas que más gastos tienen.
 
 ```{r}
 
-##Most common jobs for majority of the Filipinos
+# Profesiones más comúnes en Filipinas
 
 by_common_jobs <- datos_training %>% 
   group_by(Household.Head.Occupation) %>%
@@ -931,7 +943,7 @@ by_common_jobs <- datos_training %>%
 
 ggplot(data = by_common_jobs) + geom_bar(mapping = aes(x = Household.Head.Occupation, y = Total), stat = "identity") + labs(title="Trabajos más comunes en familias filipinas") + theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
-# Region and expenditure
+# Región y gastos
 
 by_region_educ <- datos_training %>%
   group_by(Region, Education.Expenditure, Housing.and.water.Expenditure) %>% 
@@ -939,7 +951,8 @@ by_region_educ <- datos_training %>%
   arrange(desc(Total)) %>% ungroup()
 
 
-# Para ver el boxplot es necesario transformar la varibale
+# Para ver el boxplot es necesario transformar la variable
+
 ggplot(by_region_educ, aes(x=Region, y=Education.Expenditure)) + geom_boxplot(color="black", fill="orange", alpha = 0.6) + scale_y_log10() + labs(title="Gasto de educación por regiones") + theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
 
@@ -949,35 +962,35 @@ ggplot(by_region_educ, aes(x=Region, y=Education.Expenditure)) + geom_boxplot(co
 
 ### 5.1 Método KNN
 
-Una vez hecho nuestro análisis EDA y tener un mejor conocimiento de nuestros datos, es hora de empezar a trabajar con ellos. Para ello, lo primero que debemos de hacer, es un diagnóstico de valores faltantes de nuestras variables.
+Una vez hecho el análisis EDA, con un mejor conocimiento de los datos disponibles, es hora de empezar a prepararlos para diseñar el modelo. El primer paso es un diagnóstico de valores faltantes, que tendremos que imputar con valores factibles.
 
-Recordamos que a partir de ahora, estamos trabajando con el conjunto de datos `train`, ya que los datos `test` no los usaremos hasta la última parte de este trabajo
+Se recuerda que, a partir de ahora, se trabajará con el conjunto de datos `train`, ya que los datos `test` no serán utilizados hasta la última parte de este trabajo.
   
 ```{r}
 
-#----Detección e imputación de datos faltantes----
+# ----- Detección e imputación de datos faltantes -----
 
-# Calculamos el número total de NA en el conjunto de datos de train
+# Cálculo del número total de NA en el conjunto de datos de train
 
 length(which(is.na(datos_training)))
 
-# Calculamos el número total de filas que contienen al menos un NA en el conjunto de datos de train
+# Cálculo del número total de filas que contienen al menos un NA en el conjunto de datos de train
 
 length(which(!complete.cases(datos_training)))
 
 ```
 
-Tras ver la cantidad de NA tenemos en el conjunto, nos damos cuenta que solo existen NA en nuestras variables cualitativas. Mostramos entonces como se distribuyen gráficamente los NA en el conjunto de datos correspondiente a las variables cualitativas
+Existen bastantes valores NA en el conjunto, pero todos corresponden a las variables cualitativas. Se muestra gráficamente como se distribuyenlos NA en el conjunto de datos correspondiente a las variables cualitativas.
 
 ```{r}
 
-# Vemos que cantidad de NA tenemos en el conjunto de variables cuantitativas, y luego en las cualitativas
+# Número de NA en el conjunto de variables cuantitativas y en el conjunto de las cualitativas
 
 length(which(is.na(var_train_num)))
 length(which(is.na(var_train_cat)))
 length(which(is.na(var_train_cat$Tenure.Status)))
 
-# Mostramos gráficamente como se distribuyen los NA en el conjunto de datos correspondiente a las variables cualitativas
+# Visualización gráfica de la distribución de NA en el conjunto de datos correspondiente a las variables cualitativas
 
 aggr_plot<-aggr(var_train_cat
                 ,numbers=TRUE,sortVars=TRUE,
@@ -987,14 +1000,14 @@ aggr_plot<-aggr(var_train_cat
                 only.miss=TRUE)
 
 
-# Tabla de contingencias de las variables cuyos NA vamos a imputar
+# Tabla de contingencias de las variables cuyos NA serán imputados
 
 table_pre_Tenure<-prop.table(table(var_train_cat$Tenure.Status))
 table_pre_Worker<-prop.table(table(var_train_cat$Household.Head.Class.of.Worker))
 table_pre_Walls<-prop.table(table(var_train_cat$Type.of.Walls))
 table_pre_Roof<-prop.table(table(var_train_cat$Type.of.Roof))
 
-# Summary de las 4 variables cuyos NA vamos a imputar
+# Summary de las 4 variables cuyos NA serán imputados
 
 summary_Tenure <- summary(var_train_cat$Tenure.Status)
 summary_Worker <- summary(var_train_cat$Household.Head.Class.of.Worker)
@@ -1003,16 +1016,20 @@ summary_Roof<-summary(var_train_cat$Type.of.Roof)
 
 ```
 
-Cuando decidimos qué método de imputación de datos faltantes utilizar, tenemos en cuenta que estamos tratando con variables categóricas y que nuestro modelo final será una regresión lineal múltiple. Por ello, consideramos que la mejor opción es el método no lineal KNN (k nearest neighbours) el cual calcula la distancia del elemento nuevo a cada uno de los existentes, y ordena dichas distancias de menor a mayor para ir seleccionando el grupo al que pertenece. Por lo tanto, dicho grupo será aquel que tenga una menor distacia con la mayor frecuencia
+Al decidir qué método de imputación de datos faltantes utilizar, es conveniente tener en cuenta que se está trabajando tratando con variables categóricas, y que el modelo a diseñar será una regresión lineal múltiple.
+
+Por ello, una buena opción es el método no lineal KNN (k nearest neighbors), el cual calcula la distancia del elemento nuevo a cada uno de los existentes, y ordena dichas distancias de menor a mayor para ir seleccionando el grupo al que pertenece. Por lo tanto, dicho grupo será aquel que tenga una menor distacia con la mayor frecuencia.
 
 ```{r}
 
-# Imputamos los valores NA usando un método no lineal kNN (k nearest neighbours)
+# Imputación de los valores NA usando el método no lineal kNN (k nearest neighbors)
 
 var_train_cat$Tenure.Status <- VIM::kNN(var_train_cat,variable='Tenure.Status')%>%select(Tenure.Status)
 var_train_cat$Household.Head.Class.of.Worker<-VIM::kNN(var_train_cat,variable='Household.Head.Class.of.Worker')%>%select(Household.Head.Class.of.Worker)
 var_train_cat$Type.of.Walls<-VIM::kNN(var_train_cat,variable='Type.of.Walls')%>%select(Type.of.Walls)
 var_train_cat$Type.of.Roof<-VIM::kNN(var_train_cat,variable='Type.of.Roof')%>%select(Type.of.Roof)
+
+# Corrección de nombres de variables modificados al imputar
 
 names(var_train_cat)[7] <- "Household.Head.Class.of.Worker"
 names(var_train_cat)[10] <- "Type.of.Roof"
@@ -1020,7 +1037,7 @@ names(var_train_cat)[11] <- "Type.of.Walls"
 names(var_train_cat)[12] <- "Tenure.Status"
 
 
-# Comprobamos que hemos conseguido eliminar todos los NA del conjunto de variables categóricas
+# Comprobación de que se han eliminado todos los NA del conjunto de variables categóricas
 
 length(which(is.na(var_train_cat)))
 
@@ -1033,10 +1050,11 @@ table_pos_Roof<-prop.table(table(var_train_cat$Type.of.Roof))
 
 ```
 
-Finalmente,comporbamos que las proporciones no se han visto afectadas por la imputación
+Finalmente, se comprueba que las proporciones no se han visto afectadas por la imputación.
 
 ```{r}
-# Comprobamos que las proporciones no se han visto afectadas por la imputación
+
+# Comprobación de que las proporciones no se han visto afectadas por la imputación
 
 porc_dif_Tenure <- (table_pos_Tenure*100)-(table_pre_Tenure*100)
 porc_dif_Worker <- (table_pos_Worker*100)-(table_pre_Worker*100)
@@ -1045,27 +1063,21 @@ porc_dif_Roof <- (table_pos_Roof*100)-(table_pre_Roof*100)
 
 ```
 
-### 5.2 transformación de variables
+### 5.2 Transformación de variables
 
-Cualquier modelo de regresión lineal múltiple debe de cumplir las siquientes condiciones:
+Para utilizar un modelo de regresión lineal múltiple, es muy conveniente que se cumplan las siquientes condiciones:
 
-* Las variables tienen que tener distribución normal (en datos reales, en la medida de lo posible)
-* Las variables no pueden estar altamente correlacionadas entre sí
+* Las variables tienen que tener distribución normal (en la medida de lo posible).
+* Las variables no deben estar altamente correlacionadas entre sí.
 
-Por lo tanto, para poder aplicar un modelo de regresión multiple a nuestras variables numéricas, lo primero que tenemos que trabajar es en su transformación para que se acerquen lo más posible a una distribución normal. Recordamos que durante el análisis eda, veíamos que la mayoría de nuestras variables tenian un sesgo a la derecha, lo cual estropea nuestro modelo.
+Por lo tanto, para poder aplicar un modelo de regresión multiple a las variables numéricas del presente trabajo, es necesario plantear una transformación para que se acerquen lo más posible a una distribución normal. Se recuerda que durante el análisis eda, se constató que la mayoría de las variables mostraban un sesgo a la derecha, lo cual podría estropear el diseño del modelo (distribuciones no normales).
 
 ```{r}
-# Normalizamos las variables numericas usando scale (media 0 y desviación típica 1)
+
+# Normalización de las variables numericas usando scale (media 0 y desviación típica 1)
 
 var_train_num_NORM <- (scale(var_train_num,center=T,scale=T))
 
-# Aplicamos la transformación logarítmica, que produce que los valores iguales a 0 se transformen a -Inf (por la definición del logaritmo)
-
-var_train_num_Log<- log(var_train_num)
-
-# Una opción sería cambiarlos por 0
-
-Log_sin_inf <- replace(var_train_num_Log,var_train_num_Log=="-Inf",0) 
 
 # Histogramas de las variables cuantitativas normalizadas
 
@@ -1410,10 +1422,17 @@ qplot(var_train_num_NORM[1:7000,41],
 
 ```
 
-Vemos que con solo la normalización algunas de nuestras variables ya compienzan a parecerse a una distribución normal. Sin embargo, no es el método más optimo. Probamos en el siguiente punto a visualizar nuestras variables aplicándolas log10 para ayudar a que éstas sean más simétricas
+La normalización produce que algunas variables muestren una distribución normal, o casi normal. Sin embargo, muchas de ellas siguen sin adquirir dicha distribución. A continuación, se procede a aplicar otra transformación distinta a las variables: el logaritmo decimal.
 
 ```{r}
 
+# Transformación logarítmica, que produce que los valores iguales a 0 se transformen a -Inf (por la definición del logaritmo)
+
+var_train_num_Log<- log(var_train_num)
+
+# Se imputan los valores -Infinito a valor 0, para no entorpecer la visualización y el procesado
+
+Log_sin_inf <- replace(var_train_num_Log,var_train_num_Log=="-Inf",0) 
 
 # Histogramas de las variables cuantitativas transformadas con el logaritmo
 
@@ -1757,37 +1776,27 @@ qplot(Log_sin_inf[1:7000,41],
 
 ```
 
-Con esta transformación, hay algunas de las variables que podemos utilizar para nuestro modelo. Sin embargo hay otras que nos suponen un problema. Vemos que la mayoría presentan valores igual a 0, y que la frecuencia de dichos valores es extremadamente alta. 
+Con esta transformación, se consiguen resultados mejores con respecto a la normalización. Muchas variables adquieren distribuciones normales o casi normales, lo que permitirá poder utilizarlas en el diseño del modelo. Sin embargo, hay otras que supondrían un problema, pues tienen distribuciones muy asimétricas.
 
-La población filipina tiene un gran número de familias que viven en condiciones extremas de pobreza (aunque desde 2018, su situación económica está mejorando considerablemente), por lo que no es de extrañar, que si estamos estudiando el income y lo enfrentamos con variables tales como gastos en gasto de carne, alchol, comunicación, móviles, tabaco, etc, tengamos a un gran grupo de familias que no gasten nada y muestren valores 0.
+Algunas variables presentan un porcentaje muy alto de valores iguales a 0, lo que produce un polo en el extremo izquierdo de la distribución. Esto es debido a que la población filipina cuenta con un gran número de familias que viven en condiciones extremas de pobreza (aunque desde 2018, su situación económica está mejorando considerablemente).
 
-Tras ver que esos valores 0 son claramente representativos de nuestra población y no tiene sentido eliminarlos ni transformarlos, nos surge la pregunta: ¿Hasta qué punto queremos perder la interpretabilidad de los datos?
+En el siguiente apartado, se tendrá en cuenta lo analizado, para descartar aquellas variables cuya distribución no encaje con los requisitos, y partiendo del conjunto de datos transformados logarítmicamente.
 
 
 ## 6. Análisis de correlación
 
-Recordamos las condiciones de cualquier modelo de regresión lineal múltiple:
+Recordamos las condiciones  óptimas de cualquier modelo de regresión lineal múltiple:
 
 * Las variables tienen que tener distribución normal y ser simétricas
 * Las variables no pueden estar altamente correlacionadas entre sí
 
-Por lo tanto, para cumplir el siguiente paso, debemos de hacer un análisis de correlación de nuestras matrices. Inspeccionamos la matriz de correlación cruzada en las variables numéricas sin transformar, las normalizadas y las trasnformadas con el logaritmo en base 10.  
+Por lo tanto, y a la vista del apartado anterior, se partirá del conjunto de variables transformadas logarítmicamente. Además, serán descartadas aquellas variables con distribuciones claramente asimétricas. Después, mediante un análisis de la correlación entre pares de las variables matrices, se rechazarán las variables altamente correladas entre sí a la hora de diseñar el modelo de regresión lineal múltiple.
+
+
 
 ```{r}
-#----- Cálculo de la matriz de correlaciones cruzadas----------
 
-# Para las variables numéricas sin transformar
-#cor_matrix <- round(cor(var_train_num),4)
-
-# Para las variables numéricas normalizadas
-#cor_matrix_norm <- round(cor(var_train_num_NORM),4)
-
-# Para las variables numéricas transformadas con el logaritmo en base 10
-```
-
-Quitamos las quitamos las variables que no tienen distribuciones normales/simétricas
-
-```{r}
+# ----- Descarte de variables que no tienen distribuciones normales/simétricas -----
 
 Log_reduced <- Log_sin_inf%>%select(
 -Restaurant.and.hotels.Expenditure,
@@ -1816,92 +1825,63 @@ Log_reduced <- Log_sin_inf%>%select(
 -Number.of.Motorized.Banca,                   
 -Number.of.Motorcycle.Tricycle)
 
-#cor_matrix_log <- round(cor(Log_sin_inf),4)
+# Cálculo de la matriz de correlaciones cruzadas
+
 cor_matrix_log_reduced <- round(cor(Log_reduced),4)
+
 ```
 
-Visualizamos mediante un mapa de calor las correlaciones cruzadas en las variables numéricas sin transformar, las normalizadas y las transformadas con el log10. Finalmente, calculamos la diferencia entre la matriz sin normalizar y las otras dos, para ver como afectan las transformaciones
 
 ```{r}
 #----- Mapa de calor de la matriz de correlaciones cruzadas----------
 
-# Para las variables numéricas sin transformar
-mapa_corr <- melt(cor_matrix)
+mapa_corr <- melt(cor_matrix_log_reduced)
 ggplot(data = mapa_corr, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
 
-# Para las variables numéricas normalizadas
-mapa_corr_norm <- melt(cor_matrix_norm)
-ggplot(data = mapa_corr_norm, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
-
-# Para las variables numéricas transformadas con el logaritmo en base 10
-mapa_corr_log <- melt(cor_matrix_log)
-ggplot(data = mapa_corr_log, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
-
-# Calculamos la diferencia entre la matriz sin normalizar y las otras dos, para ver como afectan las transformaciones
-
-dif_norm_vs_sin <- abs(cor_matrix-cor_matrix_norm)
-dif_log_vs_sin <- abs(cor_matrix_log-cor_matrix)
-
-mapa_corr_dif_norm <- melt(dif_norm_vs_sin)
-ggplot(data = mapa_corr_dif_norm, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
-
-mapa_corr_dif_log <- melt(dif_log_vs_sin)
-ggplot(data = mapa_corr_dif_log, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
 
 ```
 
 ## 7. Selección de variables y modelo
 
-Evitamos variables altamente correlacionadas entre sí, descartando de cada par la que más correlada esté con todas las demás.
+Es conveniente evitar variables altamente correlacionadas entre sí, descartando de cada par la que más correlada esté con todas las demás. En el análisis no se incluirá la variable a predecir ("Total.Household.Income"), pues en ese caso la alta correlación sí es interesante.
 
 ```{r}
 
-# ----Selección de variables---- #
+# ----- Selección de variables ----- #
 
-# Evitamos variables altamente correlacionadas entre sí, descartando de cada par la que más correlada esté con todas las demás (mediante findCorrelation)
+# Subconjunto sin la variable "income" a predecir
 
-#sin_income <- var_train_num[,c(2:length(var_train_num))]
 sin_income_log <- Log_reduced[,c(2:length(Log_reduced))]
 
-#index_sin<-findCorrelation(cor(sin_income),cutoff =.5,verbose = TRUE,exact = TRUE)
+# Descarte de variables altamente correlacionadas (findCorrelation)
+
 index_log<-findCorrelation(cor(sin_income_log),cutoff =.5,verbose = TRUE,exact = TRUE)
 
-#sin_income <- sin_income%>%select(-index_sin)
 sin_income_log <- sin_income_log%>%select(-index_log)
 
-#### var_train_num_NORM <- c(var_train_num_NORM)%>%select(-index_sin)
 
-# Con el nuevo conjunto de variables, hallamos la matriz de correlación
+# Con el nuevo conjunto de variables, se calcula la matriz de correlación
 
-# new_var_train_sin<-cbind(Total.Household.Income=var_train_num[,1],sin_income)
-# cor_mat<-cor(new_var_train_sin)
-# cor_mat<-cor_mat[,order(cor_mat[1,],decreasing = T)]
-# 
-# ggcorrplot(t(cor_mat), method = "circle") # Representación gráfica del mapa de calor
+new_var_train_log<-cbind(Total.Household.Income=Log_reduced[,1],sin_income_log)
 
-
-new_var_train_log<-cbind(Total.Household.Income=Log_sin_inf[,1],sin_income_log,Household.Head.Age=var_train_num$Household.Head.Age)
 cor_mat_log<-cor(new_var_train_log)
+
 cor_mat_log<-cor_mat_log[,order(cor_mat_log[1,],decreasing = T)]
 
 ggcorrplot(t(cor_mat_log), method = "circle") # Representación gráfica del mapa de calor
 
 
 
-# Vamos a escoger las que tienen correlación > de 0.5
+# Se escogerán las que tengan una correlación > de 0.5 con respecto al "Total.Household.Income"
 
-Variables_ordenadas<-data.frame(t(cor_mat_log)[,'Total.Household.Income']) # Es para quedarme con la columna ordenada
+Variables_ordenadas<-data.frame(t(cor_mat_log)[,'Total.Household.Income']) # Es para quedarse con la columna ordenada
 colnames(Variables_ordenadas)<-'Coef. Corr'
 View(Variables_ordenadas)
 
-# Las seleccionamos manualmente:
-rownames(Variables_ordenadas) # Para ayuda y no escribirlas ; Ctrl+C, Ctrl+V
 
-# Variables_ordenadas<-Variables_ordenadas %>% filter(`Coef. Corr` >0.5)
-# rownames(Variables_ordenadas)
-#is.list(listaaa[2:length(listaaa)])
-#var_independientes<-new_var_train_num%>%select(unlist(listaaa, use.names=FALSE)) OLD
+# Selección manual:
 
+rownames(Variables_ordenadas)
 
 
 #----Ajuste, interpretación y diagnosis del modelo de regresión lineal múltiple----
@@ -1918,6 +1898,8 @@ summary(RLM)
 
 qqnorm(residuos)
 qqline(residuos)# si da error eejecutarlo en consola par ver que sale algo y si en el rmd da error, ejecutar en otro chunk
+
+
 ```
 
 ```{r}
