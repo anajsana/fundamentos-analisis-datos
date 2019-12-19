@@ -1880,57 +1880,104 @@ View(Variables_ordenadas)
 ## 8. Ajuste, interpretación y diagnosis del modelo de regresión lineal múltiple
 
 
-
 ```{r}
-# Se realiza la regresión lineal múltiple con las variables que previamente han tenido un valor de correlación superior a 0.5
+
+# Se realiza la regresión lineal múltiple con las variables cuyo valor de correlación cruzada es superior a 0.5
+
 RLM<-lm(Total.Household.Income~Transportation.Expenditure
           +Clothing..Footwear.and.Other.Wear.Expenditure
           +Fruit.Expenditure
           ,data=new_var_train_log)
 
+
+# Cálculo de residuos del modelo
+
 residuos <- rstandard(RLM)
-# En la siguiente línea calcularemos los valores "predichos"= ajustados pero con los datos de training
-# Esto puedo no tener sentido, pero se hace en muchos sitios observar que los residuos tienden a la normalidad
+
+
+# Ajuste de valores de residuos - comprobación de normalidad
+
 valores.ajustados <- fitted(RLM)
-# Verificamos que los valores predichos y los residuos no tienen realción lineal
+
+# Verificación de la no relación lineal entre valores predichos y  residuos
+
 plot(valores.ajustados, residuos)
-# Obtenemos los betas estimados en la regresión lineal múltiple
+
+# Valores de los betas estimados en la regresión lineal múltiple
+
 summary(RLM)
 
 ```
 
+
+Para comprobar que el resultado es correcto, se observa en la siguiente gráfica si los residuos siguen una distribución normal. Para ello, se representa el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta, mejor.
+
+
 ```{r}
-# Para comprobar que el resultado es correcto observamos en la siguiente gráfica si los residuos siguen una distribución normal. Para ello representamos el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta mejor
+
 qqnorm(residuos)
+
 qqline(residuos)
+
+
 ```
 
+# Validación del modelo
+
 
 ```{r}
-# Del conjunto de test se seleccionan las variables necesarias
+
+# Del conjunto de test, se seleccionan las variables adecuadas
+
 pre_datos_testing<-datos_testing%>%select(Transportation.Expenditure
           ,Clothing..Footwear.and.Other.Wear.Expenditure
         ,Fruit.Expenditure)
-# Es necesario transformar logarítmicamente el conjunto de test antes de usarlo para validar
+
+
+# Es necesario transformar logarítmicamente el conjunto de test antes de usarlo para validar, pues el conjunto de train estaba transformado logarítmicamente
+
 pre_datos_testing<-log(pre_datos_testing)
-# Quitamos posibles valores inf
+
+
+# Quitamos los valores -Inf transformandolos a 0
+
 pre_datos_testing <- replace(pre_datos_testing,pre_datos_testing=="-Inf",0) 
-# Realizamos la predicción con nuestro modelo de RLM calculado
+
+
+# Predicción con el modelo de RLM calculado
+
 ic <- predict(RLM,pre_datos_testing)
-# Obtenermos en un vector los valores reales para compararlos con los predichos. Para ello, calcularemos sus residuos
+
+
+# Se obtienen, en un vector, los valores reales para compararlos con los predichos. Para ello, se calculan sus residuos
+
 Valores_reales<-log(datos_testing$Total.Household.Income)
 
 Valores_predichos<-ic
+
+
 # Calculamos los residuos
+
 residuos<-Valores_reales-Valores_predichos
-# Comprobamos que no existe ninguna relación lineal entre los valores predichos por el modelo y los residuos hallados
+
+
+# Verificación de la no relación lineal entre valores predichos y  residuos
+
 plot(Valores_predichos,residuos)
+
 
 ```
 
+
+Para comprobar que el resultado es correcto, se observa en la siguiente gráfica si los residuos siguen una distribución normal. Para ello, se representa el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta, mejor.
+
+
 ```{r}
-# Para comprobar que el resultado es correcto observamos en la siguiente gráfica si los residuos siguen una distribución normal. Para ello representamos el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta mejor
+
 qqnorm(residuos)
+
 qqline(residuos)
+
+
 ```
 
