@@ -1,0 +1,1946 @@
+---
+title: "Fundamentos análisis de datos - Práctica final"
+output: pdf_document
+---
+
+# Fundamentos análisis de datos - Práctica final
+
+**David Durán Prieto**
+**Gerardo Aguilar**
+**Ana Jiménez Santamaría**
+
+***
+
+## 1. Contexto
+
+El data set que hemos elegido proviene de una encuesta realizada por la PSA (Philippine Statistics Authority) donde se muestran los gastos e ingresos por familia en las islas Filipinas. Contiene 40k observaciones y 60 variables que hemos agrupado en las siguientes categorías:
+
+* Gastos
+* Datos demográficos de familias
+* Datos demográficos de la persona principal en la toma de decisiones
+* Estructura de la casa
+* Número de bienes adquiridos
+
+Identificar un modelo de clasificación socio-económicos óptimo en Filipinas ha sido un tema difícil de abordar durante varios años. A día de hoy, ningun modelo ha sido aceptado de forma global, y los diferentes organismos gubernamentales que existen utilizan sus propios modelos.
+
+## 2. Objetivo - Pregunta - Target
+
+*Objetivo*: Predecir los ingresos de una familia filipina
+*Pregunta*: Basándonos en un modelo de regresión múltiple ¿Qué variables son las  más óptimas para predecir los ingresos de una familia Filipina?
+*Target* : Nuestra variable respuesta es el income de familias filipinas (Total.Household.Income) 
+
+## 3. Procedimiento
+
+El análisis de dividirá en dos fases. La primera fase consistirá en un análisis exploratorio de los datos para entender mejor el significado y la relevancia de cada una de nuestras variables. Estudiaremos puntos clave como el nivel de correlación entre nuestra variable de interés y las demás variables.
+
+Por ello, para cada variable estudiada, nos preguntaremos:
+
+* ¿Consideramos esta variable cuando intentamos predecir los ingresos familiares?
+* Si es así ¿Cómo de relevante es esta variable en determinar nuestra variable respuesta?
+
+La segunda fase consistirá en la elaboración de un modelo de regresión lineal múltiple con las variables predictoras seleccionadas.
+
+***
+## 4. Análisis exploratorio de los datos
+
+### 4.1. Procesado inicial
+
+Si bien es cierto que lo primero de todo sería proceder con el análisis exploratorio y visualizar nuestras variables gráficamente para tener un conocimiento general de nuestros datos, más adelante veremos que en nuestro data set, los datos no han sido recogidos de la forma más efectiva. Por lo que hemos decidido crear este apartado, donde procederemos a crear nuevas variables y resúmenes, reordenar observaciones , sacar una muestra representativa y dividir nuestros datos en test y training para facilitar el trabajo de los mismos.
+
+Instalamos la librería y cargamos los datos para poder visualizarlos:
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+#----Cargamos las librerias necesarias----
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(forcats)
+library(GGally)
+library(gridExtra)
+library(egg)
+library(VIM)
+library(vcd)
+library(Hmisc)
+library(readr)
+library(moments)
+library(caret)
+library(gmodels)
+library(reshape)
+library(ggcorrplot)
+
+```
+
+Visualizamos el data set con `read.csv`. En primer lugar, dentificamos el tipo de variables que tenemos: Nuestro data set consta 60 variables:
+
+*`31` variables numéricas continuas
+*`14` variables numéricas discretas
+*`15` variables categóricas
+
+Como mencionamos en la sección de **Objetivo**, nuestra variable respuesta es una variable numérica continua: `Total.Household.Income`, entonces, todas las demás variables, pasarán a ser variables predictoras del `Income`
+
+Por otro lado, realizamos un resumen de estadísticas principales de nuestras variables numéricas para ver su media, desviación típica, número total de muestras y valores faltanes en cada variable. Curiosamente, solo encontramos datos faltantes en las variables categóricas, que más adelante trataremos 
+
+```{r}
+#----Carga de datos----
+
+datos<-read.csv(file.choose())
+#datos<-read.csv('C:/Users/david.duran/Downloads/Family Income and Expenditure.csv',stringsAsFactors = TRUE)
+
+#-----Realizamos un resumen numérico de las variables---------
+
+summary(datos)
+
+#---- vemos si en nuestra muestra existen datos faltantes-----
+
+describe(datos)
+
+#-----Analizamos el coeficiente de simetria de cada una de las variables numéricas----
+
+nums <- datos %>%
+  select_if(is.numeric)
+skewness(nums)
+
+cat <- datos %>%
+  select_if(is.factor)
+
+```
+
+Queremos recalcar que la documentación del data set era en algunos casos deficiente, impidiéndonos entender el significado de algunas variables (e.g Agricultural.Household.indicator). Por ello, decidimos eliminar aquellas variables que no tienen ningún sentido desde nuestra posición.
+
+```{r}
+
+# Eliminamos ciertas variables del dataset
+
+datos<-datos%>%select(-Agricultural.Household.indicator,-Members.with.age.less.than.5.year.old,-Members.with.age.5...17.years.old
+                      ,-Household.Head.Occupation)
+```
+
+
+A continuación, vamos a ir variable a variable etiquetando como NA cuando tengamos valores que consideraremos erróneos o no recogidos (missing values). Esos valores vendrán normalmente etiquetados por `unknown`, `not applicable` o `0`. Sin embargo, en este último caso hay que tener cuidado, ya que en este data set las variables pueden tener 0 debido al tipo de datos que son (valores socio económicos)
+
+```{r}
+
+#----Corregimos valores en variables----
+
+levels(datos$Main.Source.of.Income)
+summary(datos$Main.Source.of.Income)
+datos$Main.Source.of.Income = factor(datos$Main.Source.of.Income,ordered=TRUE,levels=(c('Other sources of Income'
+                                                                            , 'Enterpreneurial Activities'
+                                                                            , 'Wage/Salaries')))
+levels(datos$Main.Source.of.Income)
+
+#--------------------------------------------------
+
+levels(datos$Household.Head.Marital.Status)
+summary(datos$Household.Head.Marital.Status)
+datos$Household.Head.Marital.Status[which(datos$Household.Head.Marital.Status=='Unknown')] <-NA # Etiquetamos como NA el valor "Unknown" (desconocido)
+datos$Household.Head.Marital.Status<-fct_drop(datos$Household.Head.Marital.Status)
+levels(datos$Household.Head.Marital.Status)
+datos$Household.Head.Marital.Status = 
+  factor(datos$Household.Head.Marital.Status,ordered=TRUE,levels=
+           (c('Single'
+              ,'Widowed'
+              ,'Annulled'
+              ,'Divorced/Separated'
+              ,'Married')))
+levels(datos$Household.Head.Marital.Status)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+levels(datos$Household.Head.Class.of.Worker)
+summary(datos$Household.Head.Class.of.Worker)
+datos$Household.Head.Class.of.Worker = 
+  factor(datos$Household.Head.Class.of.Worker,ordered=TRUE,levels=
+           (c('Worked without pay in own family-operated farm or business'
+              ,'Employer in own family-operated farm or business'
+              ,'Worked with pay in own family-operated farm or business'
+              ,'Self-employed wihout any employee'
+              ,'Worked for private household'
+              ,'Worked for private establishment'
+              ,'Worked for government/government corporation')))
+levels(datos$Household.Head.Class.of.Worker)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+levels(datos$Type.of.Household)
+datos$Type.of.Household = 
+  factor(datos$Type.of.Household,ordered=TRUE,levels=
+           (c('Single Family'
+              ,'Two or More Nonrelated Persons/Members'
+              ,'Extended Family')))
+levels(datos$Type.of.Household)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+levels(datos$Type.of.Building.House)
+datos$Type.of.Building.House = 
+  factor(datos$Type.of.Building.House,ordered=TRUE,levels=
+           (c('Other building unit (e.g. cave, boat)'
+              ,'Institutional living quarter'
+              ,'Commercial/industrial/agricultural building'
+              ,'Single house'
+              ,'Duplex'
+              ,'Multi-unit residential')))
+levels(datos$Type.of.Building.House)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+levels(datos$Type.of.Roof)
+summary(datos$Type.of.Roof)
+datos$Type.of.Roof[which(datos$Type.of.Roof=='Not Applicable')] <-NA # Etiquetamos como NA el valor "Not Applicable" (no aplicable)
+datos$Type.of.Roof<-fct_drop(datos$Type.of.Roof)
+levels(datos$Type.of.Roof)
+summary(datos$Type.of.Roof)
+datos$Type.of.Roof = 
+  factor(datos$Type.of.Roof,ordered=TRUE,levels=
+           (c('Salvaged/makeshift materials'
+              ,'Light material (cogon,nipa,anahaw)'
+              ,'Mixed but predominantly salvaged materials'
+              ,'Mixed but predominantly light materials'
+              ,'Mixed but predominantly strong materials'
+              ,'Strong material(galvanized,iron,al,tile,concrete,brick,stone,asbestos)')))
+levels(datos$Type.of.Roof)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+levels(datos$Type.of.Walls)
+summary(datos$Type.of.Walls)
+datos$Type.of.Walls[which(datos$Type.of.Walls=='Not applicable')] <-NA # Etiquetamos como NA el valor "Not Applicable" (no aplicable)
+datos$Type.of.Walls<-fct_drop(datos$Type.of.Walls)
+levels(datos$Type.of.Walls)
+summary(datos$Type.of.Walls)
+datos$Type.of.Walls= 
+  factor(datos$Type.of.Walls,ordered=TRUE,levels=
+           (c('Salvaged'
+              ,'Very Light'
+              ,'Light'
+              ,'Strong'
+              ,'Quite Strong')))
+levels(datos$Type.of.Walls)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Toilet.Facilities)
+summary(datos$Toilet.Facilities)
+datos$Toilet.Facilities= 
+  factor(datos$Toilet.Facilities,ordered=TRUE,levels=
+           (c('None'
+              ,'Others'
+              ,'Open pit'
+              ,'Closed pit'
+              ,'Water-sealed, other depository, shared with other household'
+              ,'Water-sealed, other depository, used exclusively by household'
+              ,'Water-sealed, sewer septic tank, shared with other household'
+              ,'Water-sealed, sewer septic tank, used exclusively by household')))
+levels(datos$Toilet.Facilities)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Household.Head.Occupation)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Main.Source.of.Water.Supply)
+datos$Main.Source.of.Water.Supply= 
+  factor(datos$Main.Source.of.Water.Supply,ordered=TRUE,levels=
+           (c('Others'
+              ,'Dug well'
+              ,'Lake, river, rain and others'
+              ,'Unprotected spring, river, stream, etc'
+              ,'Protected spring, river, stream, etc'
+              ,'Tubed/piped shallow well'
+              ,'Shared, tubed/piped deep well'
+              ,'Own use, tubed/piped deep well'
+              ,'Peddler'
+              ,'Shared, faucet, community water system'
+              ,'Own use, faucet, community water system')))
+levels(datos$Main.Source.of.Water.Supply)
+
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Tenure.Status)
+datos$Tenure.Status[which(datos$Tenure.Status=='Not Applicable')] <-NA # Etiquetamos como NA el valor "Not Applicable" (no aplicable)
+datos$Tenure.Status<-fct_drop(datos$Tenure.Status)
+levels(datos$Tenure.Status)
+summary(datos$Tenure.Status)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+levels(datos$Electricity) 
+summary(datos$Electricity)
+ggplot(datos, aes(x=Number.of.Airconditioner,fill= Electricity)) + geom_bar(position = "dodge")
+
+```
+
+La siguiente variable es un claro ejemplo de la importancia del `0`. Puesto que no tenemos ninguna descripción de las variables de nuestro data.set más allá del título, intentamos ver a qué se refiere esos `0`. Vemos en la gráfica que todos los usuarios que tienen aire acondicionado, tienen un 1 en Electricity, y que ningún usuario con un 0 tiene aire acondicionado, por lo que podemos afirmar que el 1 corresponde a tener electricidad y el 0 a no tenera. 
+
+Para clarificar, la categorizamos por `sí` y `no`
+
+```{r}
+
+datos$Electricity[which(datos$Electricity=='0')] <- 'No'
+datos$Electricity[which(datos$Electricity=='1')] <- 'Si'
+
+
+# Transformamos la variable Electricity a categórica, por ser binaria (0 o 1 / No o Si)
+
+
+datos$Electricity<-as.factor(datos$Electricity)
+
+datos$Electricity = 
+  factor(datos$Electricity,ordered=TRUE,levels=
+           (c('No','Si')))
+
+```
+
+El ultimo grupo de nuestras variables, son número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus valores solo oscilan entre 0 a 5 o 4. Inspeccionamos más a fondo estas variables viendo la media por familia filipina de los diferentes bienes.
+
+```{r}
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.bedrooms)
+summary(datos$Number.of.bedrooms)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Refrigerator.Freezer)
+summary(datos$Number.of.Refrigerator.Freezer)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Washing.Machine)
+summary(datos$Number.of.Washing.Machine)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Airconditioner)
+summary(datos$Number.of.Airconditioner)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Car..Jeep..Van)
+summary(datos$Number.of.Car..Jeep..Van)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.CD.VCD.DVD)
+summary(datos$Number.of.CD.VCD.DVD)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Cellular.phone)
+summary(datos$Number.of.Cellular.phone)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Component.Stereo.set)
+summary(datos$Number.of.Component.Stereo.set)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Landline.wireless.telephones)
+summary(datos$Number.of.Landline.wireless.telephones)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Personal.Computer)
+summary(datos$Number.of.Personal.Computer)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Motorcycle.Tricycle)
+summary(datos$Number.of.Motorcycle.Tricycle)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Stove.with.Oven.Gas.Range)
+summary(datos$Number.of.Stove.with.Oven.Gas.Range)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Television)
+summary(datos$Number.of.Television)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+levels(datos$Number.of.Motorized.Banca)
+summary(datos$Number.of.Motorized.Banca)
+#---------------------------------------------------------------------------------------------------------------------------------------------
+
+```
+
+Una vez tenemos nuestros datos ordenados, y debido a que el volumen de nuestra muestra puede ser un problema cuando tratemos con ellos, procedemos a realizar un muestreo de 10000 observaciones con muestreo aleatorio simple y fijando una semilla aleatoria.
+
+Dividimos la muestra de 10000 observaciones en dos conjuntos: uno de Train y otro de Test 70% - 30%. Trabajaremos con el conjunto de train, mientras que el de test será reservado para la parte final (evaluación del modelo)
+
+```{r}
+
+#-----Creamos una muestra de nuestros datos con muestreo aleatorio simple sin reemplazamiento-----
+
+set.seed(300)
+datos_s <- datos %>%
+  sample_n(size=10000,replace=FALSE)
+
+# Dividimos la muestra de 10000 observaciones en dos conjuntos: uno de Train y otro de Test 70% - 30%
+
+training <- createDataPartition(pull(datos_s, Total.Household.Income ),
+                                p = 0.7, list = FALSE, times = 1)
+
+datos_training <- slice(datos_s, training)
+datos_testing <- slice(datos_s, -training)
+
+var_train_cat <- datos_training%>%select_if(is.factor)
+var_train_num <- datos_training%>%select_if(is.numeric)
+
+```
+
+### 4.2. Análisis variables cualitativas
+
+Para estudiar más a fondo nuestras variables cualitativas. Vamos a ver sus frecuendias absolutas de cada variable una a una con ayuda de la función `table()`
+
+```{r}
+#-------Frecuencias absolutas y relativas------
+# La función table() es una tabla de contingencia (frecuencias absolutas)
+table(var_train_cat$Region)
+table(var_train_cat$Main.Source.of.Income)
+table(var_train_cat$Household.Head.Sex)
+table(var_train_cat$Household.Head.Marital.Status)
+table(var_train_cat$Household.Head.Job.or.Business.Indicator)
+table(var_train_cat$Household.Head.Class.of.Worker)
+table(var_train_cat$Type.of.Household)
+table(var_train_cat$Type.of.Building.House)
+table(var_train_cat$Type.of.Roof)
+table(var_train_cat$Type.of.Walls)
+table(var_train_cat$Number.of.bedrooms)
+table(var_train_cat$Tenure.Status)
+table(var_train_cat$Toilet.Facilities)
+table(var_train_cat$Electricity)
+table(var_train_cat$Electricity)
+table(var_train_cat$Main.Source.of.Water.Supply)
+table(var_train_cat$Number.of.Television)
+table(var_train_cat$Number.of.Television)
+table(var_train_cat$Number.of.CD.VCD.DVD)
+table(var_train_cat$Number.of.Component.Stereo.set)
+table(var_train_cat$Number.of.Refrigerator.Freezer)
+table(var_train_cat$Number.of.Washing.Machine)
+table(var_train_cat$Number.of.Airconditioner)
+table(var_train_cat$Number.of.Car..Jeep..Van)
+table(var_train_cat$Number.of.Landline.wireless.telephones)
+table(var_train_cat$Number.of.Cellular.phone)
+table(var_train_cat$Number.of.Personal.Computer)
+table(var_train_cat$Number.of.Stove.with.Oven.Gas.Range)
+table(var_train_cat$Number.of.Motorized.Banca)
+table(var_train_cat$Number.of.Motorcycle.Tricycle)
+table(var_train_cat$Household.Head.Highest.Grade.Completed)
+
+```
+
+Seguidamente, realizamos el mismo proceso para ver las frecuencias relativas, utilizando la función `prop.table()`
+
+```{r}
+# Con prop.table sacamos las relativas
+prop.table(table(var_train_cat$Region))
+prop.table(table(var_train_cat$Main.Source.of.Income))
+prop.table(table(var_train_cat$Household.Head.Sex))
+prop.table(table(var_train_cat$Household.Head.Marital.Status))
+prop.table(table(var_train_cat$Household.Head.Job.or.Business.Indicator))
+prop.table(table(var_train_cat$Household.Head.Class.of.Worker))
+prop.table(table(var_train_cat$Type.of.Household))
+prop.table(table(var_train_cat$Type.of.Building.House))
+prop.table(table(var_train_cat$Type.of.Roof))
+prop.table(table(var_train_cat$Type.of.Walls))
+prop.table(table(var_train_cat$Number.of.bedrooms))
+prop.table(table(var_train_cat$Tenure.Status))
+prop.table(table(var_train_cat$Toilet.Facilities))
+prop.table(table(var_train_cat$Electricity))
+prop.table(table(var_train_cat$Electricity))
+prop.table(table(var_train_cat$Main.Source.of.Water.Supply))
+prop.table(table(var_train_cat$Number.of.Television))
+prop.table(table(var_train_cat$Number.of.Television))
+prop.table(table(var_train_cat$Number.of.CD.VCD.DVD))
+prop.table(table(var_train_cat$Number.of.Component.Stereo.set))
+prop.table(table(var_train_cat$Number.of.Refrigerator.Freezer))
+prop.table(table(var_train_cat$Number.of.Washing.Machine))
+prop.table(table(var_train_cat$Number.of.Airconditioner))
+prop.table(table(var_train_cat$Number.of.Car..Jeep..Van))
+prop.table(table(var_train_cat$Number.of.Landline.wireless.telephones))
+prop.table(table(var_train_cat$Number.of.Cellular.phone))
+prop.table(table(var_train_cat$Number.of.Personal.Computer))
+prop.table(table(var_train_cat$Number.of.Stove.with.Oven.Gas.Range))
+prop.table(table(var_train_cat$Number.of.Motorized.Banca))
+prop.table(table(var_train_cat$Number.of.Motorcycle.Tricycle))
+prop.table(table(var_train_cat$Household.Head.Highest.Grade.Completed))
+```
+
+Tras echar un vistazo rápido al output, la variable categórica `electricity` nos llama la atención. Queremos comparar la variable electricity por regiones, ya que nos puede dar una idea rápida de en qué regiones puede existir mayor nivel de probleza.
+
+Utilizamos a función `cross-table` para ello, que nos mostrará las frecuencias absolutas, relativas en relación a la fila, frecuencias relativas en relación a la columna y frecuencias relativas globales
+
+```{r}
+CrossTable(var_train_cat$Region, var_train_cat$Electricity, prop.chisq = FALSE)
+CrossTable(var_train_cat$Household.Head.Class.of.Worker, var_train_cat$Number.of.Stove.with.Oven.Gas.Range, prop.chisq = FALSE)
+```
+
+Añadimos a nuestro análisis una tercera variable que encontramos interesante, la variable `Sex`, que indica el sexo de la persona que toma las decisiones en el hogar
+
+```{r}
+#----------estudio frecuencias multidimensionales----------------
+# Analizamos la variable electricity y region filtranto por si la persona que toma las decisiones en la casa es hombre o mujer
+ftable(var_train_cat$Region, var_train_cat$Household.Head.Sex, var_train_cat$Electricity)
+```
+
+Finalmente, visualizamos nuestos datos previos en los siguientes diagrama de barras:
+
+```{r}
+#-----------gráficos EDA con variables cualitativas individuales------------
+ggplot(datos, aes(Region)) + geom_bar() + ggtitle("Núm. familias. por Región") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(datos, aes(Main.Source.of.Income)) + geom_bar() + ggtitle("Núm. familias. por fuente de ingresos")
+#-------visualización de datos cualitativos
+barplot(table(datos$Region), col = c("lightblue","yellow", "cadetblue4"),
+        main = "Diagrama de barras de las frecuencias absolutas\n de la variable \"Region\"")
+barplot(table(datos$Household.Head.Sex, datos$Electricity),
+        beside = T, 
+        col = c("yellow", "lightblue"),
+        names = c("Women", "Men"), 
+        legend.text = c("No", "Yes"))
+barplot(prop.table(table(datos$Household.Head.Class.of.Worker,datos$Main.Source.of.Income)),
+        beside = TRUE, col = c("chocolate","cornsilk1","cornflowerblue","blueviolet", "darkgoldenrod1", "coral", "brown", "chartreuse4"),
+        legend.text = T, main = "Frecuencias relativas de fuente de\n ingresos por tipo de trabajo",
+        ylim = c(0,1))
+```
+
+### 4.3. Análisis variables cuantitativas
+
+Nos disponemos a ver la distribución y densidad  de cada una de nuestras variables cuantitativas sin normalizar ni estandarizar, para identificar aquellas con los datos más sesgados 
+
+```{r}
+
+# Histograma de las variables cuantitativas sin normalizar ni estandarizar
+
+summary(var_train_num$Total.Household.Income)
+qplot(var_train_num$Total.Household.Income,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Total Household Income", 
+      xlab = "Total Household Income",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(10000,12000000))
+
+summary(var_train_num$Total.Food.Expenditure)
+qplot(var_train_num$Total.Food.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Total Food Expenditure", 
+      xlab = "Total Food Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(2000,800000))
+
+summary(var_train_num$Bread.and.Cereals.Expenditure)
+qplot(var_train_num$Bread.and.Cereals.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Bread.and.Cereals.Expenditure", 
+      xlab = "Bread.and.Cereals.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,350000))
+
+summary(var_train_num$Total.Rice.Expenditure)
+qplot(var_train_num$Total.Rice.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Total Rice Expenditure", 
+      xlab = "Total Rice Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,350000))
+
+
+summary(var_train_num$Meat.Expenditure)
+qplot(var_train_num$Meat.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Meat.Expenditure", 
+      xlab = "Meat.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,270000))
+
+summary(var_train_num$Total.Fish.and..marine.products.Expenditure)
+qplot(var_train_num$Total.Fish.and..marine.products.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Total.Fish.and..marine.products.Expenditure", 
+      xlab = "Total.Fish.and..marine.products.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,190000))
+
+summary(var_train_num$Fruit.Expenditure)
+qplot(var_train_num$Fruit.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Fruit.Expenditure", 
+      xlab = "Fruit.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,70000))
+
+summary(var_train_num$Vegetables.Expenditure)
+qplot(var_train_num$Vegetables.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Vegetables.Expenditure", 
+      xlab = "Vegetables.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,80000))
+
+summary(var_train_num$Restaurant.and.hotels.Expenditure)
+qplot(var_train_num$Restaurant.and.hotels.Expenditure,
+      geom="histogram",
+      binwidth = 5000,
+      main = "Histogram for Restaurant.and.hotels.Expenditure", 
+      xlab = "Restaurant.and.hotels.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-5000,520000))
+
+summary(var_train_num$Alcoholic.Beverages.Expenditure)
+qplot(var_train_num$Alcoholic.Beverages.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Alcoholic.Beverages.Expenditure", 
+      xlab = "Alcoholic.Beverages.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,36000))
+
+summary(var_train_num$Tobacco.Expenditure)
+qplot(var_train_num$Tobacco.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Tobacco.Expenditure", 
+      xlab = "Tobacco.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,100000))
+
+
+summary(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure)
+qplot(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Clothing..Footwear.and.Other.Wear.Expenditure", 
+      xlab = "Clothing..Footwear.and.Other.Wear.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,360000))
+
+summary(var_train_num$Housing.and.water.Expenditure)
+qplot(var_train_num$Housing.and.water.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Housing.and.water.Expenditure", 
+      xlab = "Housing.and.water.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(2000,842000))
+
+summary(var_train_num$Imputed.House.Rental.Value)
+qplot(var_train_num$Imputed.House.Rental.Value,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Imputed.House.Rental.Value", 
+      xlab = "Imputed.House.Rental.Value",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,730000))
+
+summary(var_train_num$Medical.Care.Expenditure)
+qplot(var_train_num$Medical.Care.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Medical.Care.Expenditure", 
+      xlab = "Medical.Care.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,1000000))
+
+summary(var_train_num$Transportation.Expenditure)
+qplot(var_train_num$Transportation.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Transportation.Expenditure", 
+      xlab = "Transportation.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,500000))
+
+summary(var_train_num$Communication.Expenditure)
+qplot(var_train_num$Communication.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Communication.Expenditure", 
+      xlab = "Communication.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,100000))
+
+
+summary(var_train_num$Education.Expenditure)
+qplot(var_train_num$Education.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Education.Expenditure", 
+      xlab = "Education.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,340000))
+
+
+summary(var_train_num$Miscellaneous.Goods.and.Services.Expenditure)
+qplot(var_train_num$Miscellaneous.Goods.and.Services.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Miscellaneous.Goods.and.Services.Expenditure", 
+      xlab = "Miscellaneous.Goods.and.Services.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,320000))
+
+summary(var_train_num$Special.Occasions.Expenditure)
+qplot(var_train_num$Special.Occasions.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Special.Occasions.Expenditure", 
+      xlab = "Special.Occasions.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,310000))
+
+summary(var_train_num$Crop.Farming.and.Gardening.expenses)
+qplot(var_train_num$Crop.Farming.and.Gardening.expenses,
+      geom="histogram",
+      binwidth = 100000,
+      main = "Histogram for Crop.Farming.and.Gardening.expenses", 
+      xlab = "Crop.Farming.and.Gardening.expenses",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-100000,3800000))
+
+summary(var_train_num$Total.Income.from.Entrepreneurial.Acitivites)
+qplot(var_train_num$Total.Income.from.Entrepreneurial.Acitivites,
+      geom="histogram",
+      binwidth = 100000,
+      main = "Histogram for Total.Income.from.Entrepreneurial.Acitivites", 
+      xlab = "Total.Income.from.Entrepreneurial.Acitivites",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-100000,4800000))
+
+summary(var_train_num$Household.Head.Age)
+qplot(var_train_num$Household.Head.Age,
+      geom="histogram",
+      binwidth = 5,
+      main = "Histogram for Household.Head.Age", 
+      xlab = "Household.Head.Age",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(10,100))
+
+summary(var_train_num$Total.Number.of.Family.members)
+qplot(var_train_num$Total.Number.of.Family.members,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Total.Number.of.Family.members", 
+      xlab = "Total.Number.of.Family.members",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,23))
+
+summary(var_train_num$Total.number.of.family.members.employed)
+qplot(var_train_num$Total.number.of.family.members.employed,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Total.number.of.family.members.employed", 
+      xlab = "Total.number.of.family.members.employed",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,10))
+
+summary(var_train_num$House.Floor.Area)
+qplot(var_train_num$House.Floor.Area,
+      geom="histogram",
+      binwidth = 25,
+      main = "Histogram for House.Floor.Area", 
+      xlab = "House.Floor.Area",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-25,1000))
+
+
+summary(var_train_num$House.Age)
+qplot(var_train_num$House.Age,
+      geom="histogram",
+      binwidth = 5,
+      main = "Histogram for House.Age", 
+      xlab = "House.Age",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,130))
+
+summary(var_train_num$Number.of.bedrooms)
+qplot(var_train_num$Number.of.bedrooms,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.bedrooms", 
+      xlab = "Number.of.bedrooms",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,10))
+
+
+summary(var_train_num$Number.of.Television)
+qplot(var_train_num$Number.of.Television,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Television", 
+      xlab = "Number.of.Television",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+
+
+summary(var_train_num$Number.of.CD.VCD.DVD)
+qplot(var_train_num$Number.of.CD.VCD.DVD,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.CD.VCD.DVD", 
+      xlab = "Number.of.CD.VCD.DVD",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+
+summary(var_train_num$Number.of.Component.Stereo.set)
+qplot(var_train_num$Number.of.Component.Stereo.set,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Component.Stereo.set", 
+      xlab = "Number.of.Component.Stereo.set",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+
+
+summary(var_train_num$Number.of.Refrigerator.Freezer)
+qplot(var_train_num$Number.of.Refrigerator.Freezer,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Refrigerator.Freezer", 
+      xlab = "Number.of.Refrigerator.Freezer",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+
+
+summary(var_train_num$Number.of.Washing.Machine)
+qplot(var_train_num$Number.of.Washing.Machine,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Washing.Machine", 
+      xlab = "Number.of.Washing.Machine",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,5))
+
+
+summary(var_train_num$Number.of.Airconditioner)
+qplot(var_train_num$Number.of.Airconditioner,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Airconditioner", 
+      xlab = "Number.of.Airconditioner",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+
+
+summary(var_train_num$Number.of.Car..Jeep..Van)
+qplot(var_train_num$Number.of.Car..Jeep..Van,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Car..Jeep..Van", 
+      xlab = "Number.of.Car..Jeep..Van",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,6))
+
+
+summary(var_train_num$Number.of.Landline.wireless.telephones)
+qplot(var_train_num$Number.of.Landline.wireless.telephones,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Landline.wireless.telephones", 
+      xlab = "Number.of.Landline.wireless.telephones",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+
+summary(var_train_num$Number.of.Cellular.phone)
+qplot(var_train_num$Number.of.Cellular.phone,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Cellular.phone", 
+      xlab = "Number.of.Cellular.phone",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,12))
+
+summary(var_train_num$Number.of.Personal.Computer)
+qplot(var_train_num$Number.of.Personal.Computer,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Personal.Computer", 
+      xlab = "Number.of.Personal.Computer",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,8))
+
+summary(var_train_num$Number.of.Stove.with.Oven.Gas.Range)
+qplot(var_train_num$Number.of.Stove.with.Oven.Gas.Range,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Stove.with.Oven.Gas.Range", 
+      xlab = "Number.of.Stove.with.Oven.Gas.Range",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,4))
+
+summary(var_train_num$Number.of.Motorized.Banca)
+qplot(var_train_num$Number.of.Motorized.Banca,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Motorized.Banca", 
+      xlab = "Number.of.Motorized.Banca",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,5))
+
+summary(var_train_num$Number.of.Motorcycle.Tricycle)
+qplot(var_train_num$Number.of.Motorcycle.Tricycle,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Motorcycle.Tricycle", 
+      xlab = "Number.of.Motorcycle.Tricycle",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+
+```
+
+Vemos que la mayoría de las variables están sesgadas a la derecha, una característica común cuanndo tratamos con datos socioeconómicos. A groso modo, podemos ver que algunas pueden normalizarse fácilmente aplicando cierta transformación a los datos de la variable. En el siguiente apartado trataremos este punto más a fondo
+
+### 3. Representación datos cualitativos y cuantitativos
+
+Como parte final de nuestro análisi exploratorio de datos, mostramos algunas visualizaciones interesantes que muestran el tipo de población de una familia filipina en 2017. viendo estas gráficas, podemos ver que se trata de una población mayormente agraria, en donde abundan los trabajos de campo. Además podemos ver que las familias de la Región `NAT` son laquellas familias que más gastos hacen.
+
+```{r}
+
+##Most common jobs for majority of the Filipinos
+
+by_common_jobs <- datos_training %>% 
+  group_by(Household.Head.Occupation) %>%
+  summarise(Total = n()) %>%
+  arrange(desc(Total)) %>%
+  head(20) %>% ungroup()
+
+
+ggplot(data = by_common_jobs) + geom_bar(mapping = aes(x = Household.Head.Occupation, y = Total), stat = "identity") + labs(title="Trabajos más comunes en familias filipinas") + theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+# Region and expenditure
+
+by_region_educ <- datos_training %>%
+  group_by(Region, Education.Expenditure, Housing.and.water.Expenditure) %>% 
+  summarise(Total = n()) %>%
+  arrange(desc(Total)) %>% ungroup()
+
+
+# Para ver el boxplot es necesario transformar la varibale
+ggplot(by_region_educ, aes(x=Region, y=Education.Expenditure)) + geom_boxplot(color="black", fill="orange", alpha = 0.6) + scale_y_log10() + labs(title="Gasto de educación por regiones") + theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+
+```
+
+## 5. Imputación de datos faltantes y tratamiento de variables
+
+### 5.1 Método KNN
+
+Una vez hecho nuestro análisis EDA y tener un mejor conocimiento de nuestros datos, es hora de empezar a trabajar con ellos. Para ello, lo primero que debemos de hacer, es un diagnóstico de valores faltantes de nuestras variables.
+
+Recordamos que a partir de ahora, estamos trabajando con el conjunto de datos `train`, ya que los datos `test` no los usaremos hasta la última parte de este trabajo
+  
+```{r}
+
+#----Detección e imputación de datos faltantes----
+
+# Calculamos el número total de NA en el conjunto de datos de train
+
+length(which(is.na(datos_training)))
+
+# Calculamos el número total de filas que contienen al menos un NA en el conjunto de datos de train
+
+length(which(!complete.cases(datos_training)))
+
+```
+
+Tras ver la cantidad de NA tenemos en el conjunto, nos damos cuenta que solo existen NA en nuestras variables cualitativas. Mostramos entonces como se distribuyen gráficamente los NA en el conjunto de datos correspondiente a las variables cualitativas
+
+```{r}
+
+# Vemos que cantidad de NA tenemos en el conjunto de variables cuantitativas, y luego en las cualitativas
+
+length(which(is.na(var_train_num)))
+length(which(is.na(var_train_cat)))
+length(which(is.na(var_train_cat$Tenure.Status)))
+
+# Mostramos gráficamente como se distribuyen los NA en el conjunto de datos correspondiente a las variables cualitativas
+
+aggr_plot<-aggr(var_train_cat
+                ,numbers=TRUE,sortVars=TRUE,
+                labels=names(var_train_cat)
+                ,cex.axis=.7,gap=3
+                ,ylab=c('Histograma de datos faltantes','Patrones de datos faltantes'),
+                only.miss=TRUE)
+
+
+# Tabla de contingencias de las variables cuyos NA vamos a imputar
+
+table_pre_Tenure<-prop.table(table(var_train_cat$Tenure.Status))
+table_pre_Worker<-prop.table(table(var_train_cat$Household.Head.Class.of.Worker))
+table_pre_Walls<-prop.table(table(var_train_cat$Type.of.Walls))
+table_pre_Roof<-prop.table(table(var_train_cat$Type.of.Roof))
+
+# Summary de las 4 variables cuyos NA vamos a imputar
+
+summary_Tenure <- summary(var_train_cat$Tenure.Status)
+summary_Worker <- summary(var_train_cat$Household.Head.Class.of.Worker)
+summary_Walls<-summary(var_train_cat$Type.of.Walls)
+summary_Roof<-summary(var_train_cat$Type.of.Roof)
+
+```
+
+Cuando decidimos qué método de imputación de datos faltantes utilizar, tenemos en cuenta que estamos tratando con variables categóricas y que nuestro modelo final será una regresión lineal múltiple. Por ello, consideramos que la mejor opción es el método no lineal KNN (k nearest neighbours) el cual calcula la distancia del elemento nuevo a cada uno de los existentes, y ordena dichas distancias de menor a mayor para ir seleccionando el grupo al que pertenece. Por lo tanto, dicho grupo será aquel que tenga una menor distacia con la mayor frecuencia
+
+```{r}
+
+# Imputamos los valores NA usando un método no lineal kNN (k nearest neighbours)
+
+var_train_cat$Tenure.Status <- VIM::kNN(var_train_cat,variable='Tenure.Status')%>%select(Tenure.Status)
+var_train_cat$Household.Head.Class.of.Worker<-VIM::kNN(var_train_cat,variable='Household.Head.Class.of.Worker')%>%select(Household.Head.Class.of.Worker)
+var_train_cat$Type.of.Walls<-VIM::kNN(var_train_cat,variable='Type.of.Walls')%>%select(Type.of.Walls)
+var_train_cat$Type.of.Roof<-VIM::kNN(var_train_cat,variable='Type.of.Roof')%>%select(Type.of.Roof)
+
+names(var_train_cat)[7] <- "Household.Head.Class.of.Worker"
+names(var_train_cat)[10] <- "Type.of.Roof"
+names(var_train_cat)[11] <- "Type.of.Walls"
+names(var_train_cat)[12] <- "Tenure.Status"
+
+
+# Comprobamos que hemos conseguido eliminar todos los NA del conjunto de variables categóricas
+
+length(which(is.na(var_train_cat)))
+
+# Calculamos las tablas de contingencia tras haber imputado los NA con kNN
+
+table_pos_Tenure<-prop.table(table(var_train_cat$Tenure.Status))
+table_pos_Worker<-prop.table(table(var_train_cat$Household.Head.Class.of.Worker))
+table_pos_Walls<-prop.table(table(var_train_cat$Type.of.Walls))
+table_pos_Roof<-prop.table(table(var_train_cat$Type.of.Roof))
+
+```
+
+Finalmente,comporbamos que las proporciones no se han visto afectadas por la imputación
+
+```{r}
+# Comprobamos que las proporciones no se han visto afectadas por la imputación
+
+porc_dif_Tenure <- (table_pos_Tenure*100)-(table_pre_Tenure*100)
+porc_dif_Worker <- (table_pos_Worker*100)-(table_pre_Worker*100)
+porc_dif_Walls <- (table_pos_Walls*100)-(table_pre_Walls*100)
+porc_dif_Roof <- (table_pos_Roof*100)-(table_pre_Roof*100)
+
+```
+
+### 5.2 transformación de variables
+
+Cualquier modelo de regresión lineal múltiple debe de cumplir las siquientes condiciones:
+
+* Las variables tienen que tener distribución normal (en datos reales, en la medida de lo posible)
+* Las variables no pueden estar altamente correlacionadas entre sí
+
+Por lo tanto, para poder aplicar un modelo de regresión multiple a nuestras variables numéricas, lo primero que tenemos que trabajar es en su transformación para que se acerquen lo más posible a una distribución normal. Recordamos que durante el análisis eda, veíamos que la mayoría de nuestras variables tenian un sesgo a la derecha, lo cual estropea nuestro modelo.
+
+```{r}
+# Normalizamos las variables numericas usando scale (media 0 y desviación típica 1)
+
+var_train_num_NORM <- (scale(var_train_num,center=T,scale=T))
+
+# Aplicamos la transformación logarítmica, que produce que los valores iguales a 0 se transformen a -Inf (por la definición del logaritmo)
+
+var_train_num_Log<- log(var_train_num)
+
+# Una opción sería cambiarlos por 0
+
+Log_sin_inf <- replace(var_train_num_Log,var_train_num_Log=="-Inf",0) 
+
+# Histogramas de las variables cuantitativas normalizadas
+
+summary(var_train_num_NORM[1:7000,1])
+qplot(var_train_num_NORM[1:7000,1],
+      geom="histogram",
+      main = "Histogram for Total Household Income", 
+      xlab = "Total Household Income",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,2])
+qplot(var_train_num_NORM[1:7000,2],
+      geom="histogram",
+      main = "Histogram for Total Food Expenditure", 
+      xlab = "Total Food Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,3])
+qplot(var_train_num_NORM[1:7000,3],
+      geom="histogram",
+      main = "Histogram for Bread.and.Cereals.Expenditure", 
+      xlab = "Bread.and.Cereals.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,4])
+qplot(var_train_num_NORM[1:7000,4],
+      geom="histogram",
+      main = "Histogram for Total Rice Expenditure", 
+      xlab = "Total Rice Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,5])
+qplot(var_train_num_NORM[1:7000,5],
+      geom="histogram",
+      main = "Histogram for Meat.Expenditure", 
+      xlab = "Meat.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,6])
+qplot(var_train_num_NORM[1:7000,6],
+      geom="histogram",
+      main = "Histogram for Total.Fish.and..marine.products.Expenditure", 
+      xlab = "Total.Fish.and..marine.products.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,7])
+qplot(var_train_num_NORM[1:7000,7],
+      geom="histogram",
+      main = "Histogram for Fruit.Expenditure", 
+      xlab = "Fruit.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,8])
+qplot(var_train_num_NORM[1:7000,8],
+      geom="histogram",
+      main = "Histogram for Vegetables.Expenditure", 
+      xlab = "Vegetables.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,9])
+qplot(var_train_num_NORM[1:7000,9],
+      geom="histogram",
+      main = "Histogram for Restaurant.and.hotels.Expenditure", 
+      xlab = "Restaurant.and.hotels.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,10])
+qplot(var_train_num_NORM[1:7000,10],
+      geom="histogram",
+      main = "Histogram for Alcoholic.Beverages.Expenditure", 
+      xlab = "Alcoholic.Beverages.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,11])
+qplot(var_train_num_NORM[1:7000,11],
+      geom="histogram",
+      main = "Histogram for Tobacco.Expenditure", 
+      xlab = "Tobacco.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,12])
+qplot(var_train_num_NORM[1:7000,12],
+      geom="histogram",
+      main = "Histogram for Clothing..Footwear.and.Other.Wear.Expenditure", 
+      xlab = "Clothing..Footwear.and.Other.Wear.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,13])
+qplot(var_train_num_NORM[1:7000,13],
+      geom="histogram",
+      main = "Histogram for Housing.and.water.Expenditure", 
+      xlab = "Housing.and.water.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,14])
+qplot(var_train_num_NORM[1:7000,14],
+      geom="histogram",
+      main = "Histogram for Imputed.House.Rental.Value", 
+      xlab = "Imputed.House.Rental.Value",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,15])
+qplot(var_train_num_NORM[1:7000,15],
+      geom="histogram",
+      main = "Histogram for Medical.Care.Expenditure", 
+      xlab = "Medical.Care.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,16])
+qplot(var_train_num_NORM[1:7000,16],
+      geom="histogram",
+      main = "Histogram for Transportation.Expenditure", 
+      xlab = "Transportation.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,17])
+qplot(var_train_num_NORM[1:7000,17],
+      geom="histogram",
+      main = "Histogram for Communication.Expenditure", 
+      xlab = "Communication.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,18])
+qplot(var_train_num_NORM[1:7000,18],
+      geom="histogram",
+      main = "Histogram for Education.Expenditure", 
+      xlab = "Education.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,19])
+qplot(var_train_num_NORM[1:7000,19],
+      geom="histogram",
+      main = "Histogram for Miscellaneous.Goods.and.Services.Expenditure", 
+      xlab = "Miscellaneous.Goods.and.Services.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,20])
+qplot(var_train_num_NORM[1:7000,20],
+      geom="histogram",
+      main = "Histogram for Special.Occasions.Expenditure", 
+      xlab = "Special.Occasions.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,21])
+qplot(var_train_num_NORM[1:7000,21],
+      geom="histogram",
+      main = "Histogram for Crop.Farming.and.Gardening.expenses", 
+      xlab = "Crop.Farming.and.Gardening.expenses",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,22])
+qplot(var_train_num_NORM[1:7000,22],
+      geom="histogram",
+      main = "Histogram for Total.Income.from.Entrepreneurial.Acitivites", 
+      xlab = "Total.Income.from.Entrepreneurial.Acitivites",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+	  
+summary(var_train_num_NORM[1:7000,23])
+qplot(var_train_num_NORM[1:7000,23],
+      geom="histogram",
+      main = "Histogram for Household.Head.Age", 
+      xlab = "Household.Head.Age",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,24])
+qplot(var_train_num_NORM[1:7000,24],
+      geom="histogram",
+      main = "Histogram for Total.Number.of.Family.members", 
+      xlab = "Total.Number.of.Family.members",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+	  
+summary(var_train_num_NORM[1:7000,25])
+qplot(var_train_num_NORM[1:7000,25],
+      geom="histogram",
+      main = "Histogram for Total.number.of.family.members.employed", 
+      xlab = "Total.number.of.family.members.employed",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,26])
+qplot(var_train_num_NORM[1:7000,26],
+      geom="histogram",
+      main = "Histogram for House.Floor.Area", 
+      xlab = "House.Floor.Area",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,27])
+qplot(var_train_num_NORM[1:7000,27],
+      geom="histogram",
+      main = "Histogram for House.Age", 
+      xlab = "House.Age",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,28])
+qplot(var_train_num_NORM[1:7000,28],
+      geom="histogram",
+      main = "Histogram for Number.of.bedrooms", 
+      xlab = "Number.of.bedrooms",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(var_train_num_NORM[1:7000,29])
+qplot(var_train_num_NORM[1:7000,29],
+      geom="histogram",
+      main = "Histogram for Number.of.Television", 
+      xlab = "Number.of.Television",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(var_train_num_NORM[1:7000,30])
+qplot(var_train_num_NORM[1:7000,30],
+      geom="histogram",
+      main = "Histogram for Number.of.CD.VCD.DVD", 
+      xlab = "Number.of.CD.VCD.DVD",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(var_train_num_NORM[1:7000,31])
+qplot(var_train_num_NORM[1:7000,31],
+      geom="histogram",
+      main = "Histogram for Number.of.Component.Stereo.set", 
+      xlab = "Number.of.Component.Stereo.set",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(var_train_num_NORM[1:7000,32])
+qplot(var_train_num_NORM[1:7000,32],
+      geom="histogram",
+      main = "Histogram for Number.of.Refrigerator.Freezer", 
+      xlab = "Number.of.Refrigerator.Freezer",  
+      fill=I("blue"), 
+      col=I("red")) 
+
+
+summary(var_train_num_NORM[1:7000,33])
+qplot(var_train_num_NORM[1:7000,33],
+      geom="histogram",
+      main = "Histogram for Number.of.Washing.Machine", 
+      xlab = "Number.of.Washing.Machine",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(var_train_num_NORM[1:7000,34])
+qplot(var_train_num_NORM[1:7000,34],
+      geom="histogram",
+      main = "Histogram for Number.of.Airconditioner", 
+      xlab = "Number.of.Airconditioner",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(var_train_num_NORM[1:7000,35])
+qplot(var_train_num_NORM[1:7000,35],
+      geom="histogram",
+      main = "Histogram for Number.of.Car..Jeep..Van", 
+      xlab = "Number.of.Car..Jeep..Van",  
+      fill=I("blue"), 
+      col=I("red")) 
+
+
+summary(var_train_num_NORM[1:7000,36])
+qplot(var_train_num_NORM[1:7000,36],
+      geom="histogram",
+      main = "Histogram for Number.of.Landline.wireless.telephones", 
+      xlab = "Number.of.Landline.wireless.telephones",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,37])
+qplot(var_train_num_NORM[1:7000,37],
+      geom="histogram",
+      main = "Histogram for Number.of.Cellular.phone", 
+      xlab = "Number.of.Cellular.phone",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,38])
+qplot(var_train_num_NORM[1:7000,38],
+      geom="histogram",
+      main = "Histogram for Number.of.Personal.Computer", 
+      xlab = "Number.of.Personal.Computer",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,39])
+qplot(var_train_num_NORM[1:7000,39],
+      geom="histogram",
+      main = "Histogram for Number.of.Stove.with.Oven.Gas.Range", 
+      xlab = "Number.of.Stove.with.Oven.Gas.Range",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,40])
+qplot(var_train_num_NORM[1:7000,40],
+      geom="histogram",
+      main = "Histogram for Number.of.Motorized.Banca", 
+      xlab = "Number.of.Motorized.Banca",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(var_train_num_NORM[1:7000,41])
+qplot(var_train_num_NORM[1:7000,41],
+      geom="histogram",
+      main = "Histogram for Number.of.Motorcycle.Tricycle", 
+      xlab = "Number.of.Motorcycle.Tricycle",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+
+```
+
+Vemos que con solo la normalización algunas de nuestras variables ya compienzan a parecerse a una distribución normal. Sin embargo, no es el método más optimo. Probamos en el siguiente punto a visualizar nuestras variables aplicándolas log10 para ayudar a que éstas sean más simétricas
+
+```{r}
+
+
+# Histogramas de las variables cuantitativas transformadas con el logaritmo
+
+
+summary(Log_sin_inf[1:7000,1])
+qplot(Log_sin_inf[1:7000,1],
+      geom="histogram",
+      main = "Histogram for Total Household Income", 
+      xlab = "Total Household Income",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,2])
+qplot(Log_sin_inf[1:7000,2],
+      geom="histogram",
+      main = "Histogram for Total Food Expenditure", 
+      xlab = "Total Food Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,3])
+qplot(Log_sin_inf[1:7000,3],
+      geom="histogram",
+      main = "Histogram for Bread.and.Cereals.Expenditure", 
+      xlab = "Bread.and.Cereals.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,4])
+qplot(Log_sin_inf[1:7000,4],
+      geom="histogram",
+      main = "Histogram for Total Rice Expenditure", 
+      xlab = "Total Rice Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,5])
+qplot(Log_sin_inf[1:7000,5],
+      geom="histogram",
+      main = "Histogram for Meat.Expenditure", 
+      xlab = "Meat.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,6])
+qplot(Log_sin_inf[1:7000,6],
+      geom="histogram",
+      main = "Histogram for Total.Fish.and..marine.products.Expenditure", 
+      xlab = "Total.Fish.and..marine.products.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,7])
+qplot(Log_sin_inf[1:7000,7],
+      geom="histogram",
+      main = "Histogram for Fruit.Expenditure", 
+      xlab = "Fruit.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,8])
+qplot(Log_sin_inf[1:7000,8],
+      geom="histogram",
+      main = "Histogram for Vegetables.Expenditure", 
+      xlab = "Vegetables.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,9])
+qplot(Log_sin_inf[1:7000,9],
+      geom="histogram",
+      main = "Histogram for Restaurant.and.hotels.Expenditure", 
+      xlab = "Restaurant.and.hotels.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,10])
+qplot(Log_sin_inf[1:7000,10],
+      geom="histogram",
+      main = "Histogram for Alcoholic.Beverages.Expenditure", 
+      xlab = "Alcoholic.Beverages.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,11])
+qplot(Log_sin_inf[1:7000,11],
+      geom="histogram",
+      main = "Histogram for Tobacco.Expenditure", 
+      xlab = "Tobacco.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,12])
+qplot(Log_sin_inf[1:7000,12],
+      geom="histogram",
+      main = "Histogram for Clothing..Footwear.and.Other.Wear.Expenditure", 
+      xlab = "Clothing..Footwear.and.Other.Wear.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,13])
+qplot(Log_sin_inf[1:7000,13],
+      geom="histogram",
+      main = "Histogram for Housing.and.water.Expenditure", 
+      xlab = "Housing.and.water.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,14])
+qplot(Log_sin_inf[1:7000,14],
+      geom="histogram",
+      main = "Histogram for Imputed.House.Rental.Value", 
+      xlab = "Imputed.House.Rental.Value",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,15])
+qplot(Log_sin_inf[1:7000,15],
+      geom="histogram",
+      main = "Histogram for Medical.Care.Expenditure", 
+      xlab = "Medical.Care.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,16])
+qplot(Log_sin_inf[1:7000,16],
+      geom="histogram",
+      main = "Histogram for Transportation.Expenditure", 
+      xlab = "Transportation.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,17])
+qplot(Log_sin_inf[1:7000,17],
+      geom="histogram",
+      main = "Histogram for Communication.Expenditure", 
+      xlab = "Communication.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,18])
+qplot(Log_sin_inf[1:7000,18],
+      geom="histogram",
+      main = "Histogram for Education.Expenditure", 
+      xlab = "Education.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,19])
+qplot(Log_sin_inf[1:7000,19],
+      geom="histogram",
+      main = "Histogram for Miscellaneous.Goods.and.Services.Expenditure", 
+      xlab = "Miscellaneous.Goods.and.Services.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,20])
+qplot(Log_sin_inf[1:7000,20],
+      geom="histogram",
+      main = "Histogram for Special.Occasions.Expenditure", 
+      xlab = "Special.Occasions.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,21])
+qplot(Log_sin_inf[1:7000,21],
+      geom="histogram",
+      main = "Histogram for Crop.Farming.and.Gardening.expenses", 
+      xlab = "Crop.Farming.and.Gardening.expenses",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,22])
+qplot(Log_sin_inf[1:7000,22],
+      geom="histogram",
+      main = "Histogram for Total.Income.from.Entrepreneurial.Acitivites", 
+      xlab = "Total.Income.from.Entrepreneurial.Acitivites",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+	  
+summary(Log_sin_inf[1:7000,23])
+qplot(Log_sin_inf[1:7000,23],
+      geom="histogram",
+      main = "Histogram for Household.Head.Age", 
+      xlab = "Household.Head.Age",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,24])
+qplot(Log_sin_inf[1:7000,24],
+      geom="histogram",
+      main = "Histogram for Total.Number.of.Family.members", 
+      xlab = "Total.Number.of.Family.members",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+	  
+summary(Log_sin_inf[1:7000,25])
+qplot(Log_sin_inf[1:7000,25],
+      geom="histogram",
+      main = "Histogram for Total.number.of.family.members.employed", 
+      xlab = "Total.number.of.family.members.employed",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,26])
+qplot(Log_sin_inf[1:7000,26],
+      geom="histogram",
+      main = "Histogram for House.Floor.Area", 
+      xlab = "House.Floor.Area",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,27])
+qplot(Log_sin_inf[1:7000,27],
+      geom="histogram",
+      main = "Histogram for House.Age", 
+      xlab = "House.Age",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,28])
+qplot(Log_sin_inf[1:7000,28],
+      geom="histogram",
+      main = "Histogram for Number.of.bedrooms", 
+      xlab = "Number.of.bedrooms",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(Log_sin_inf[1:7000,29])
+qplot(Log_sin_inf[1:7000,29],
+      geom="histogram",
+      main = "Histogram for Number.of.Television", 
+      xlab = "Number.of.Television",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(Log_sin_inf[1:7000,30])
+qplot(Log_sin_inf[1:7000,30],
+      geom="histogram",
+      main = "Histogram for Number.of.CD.VCD.DVD", 
+      xlab = "Number.of.CD.VCD.DVD",  
+      fill=I("blue"), 
+      col=I("red"))
+	  
+summary(Log_sin_inf[1:7000,31])
+qplot(Log_sin_inf[1:7000,31],
+      geom="histogram",
+      main = "Histogram for Number.of.Component.Stereo.set", 
+      xlab = "Number.of.Component.Stereo.set",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(Log_sin_inf[1:7000,32])
+qplot(Log_sin_inf[1:7000,32],
+      geom="histogram",
+      main = "Histogram for Number.of.Refrigerator.Freezer", 
+      xlab = "Number.of.Refrigerator.Freezer",  
+      fill=I("blue"), 
+      col=I("red")) 
+
+
+summary(Log_sin_inf[1:7000,33])
+qplot(Log_sin_inf[1:7000,33],
+      geom="histogram",
+      main = "Histogram for Number.of.Washing.Machine", 
+      xlab = "Number.of.Washing.Machine",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(Log_sin_inf[1:7000,34])
+qplot(Log_sin_inf[1:7000,34],
+      geom="histogram",
+      main = "Histogram for Number.of.Airconditioner", 
+      xlab = "Number.of.Airconditioner",  
+      fill=I("blue"), 
+      col=I("red"))
+
+
+summary(Log_sin_inf[1:7000,35])
+qplot(Log_sin_inf[1:7000,35],
+      geom="histogram",
+      main = "Histogram for Number.of.Car..Jeep..Van", 
+      xlab = "Number.of.Car..Jeep..Van",  
+      fill=I("blue"), 
+      col=I("red")) 
+
+
+summary(Log_sin_inf[1:7000,36])
+qplot(Log_sin_inf[1:7000,36],
+      geom="histogram",
+      main = "Histogram for Number.of.Landline.wireless.telephones", 
+      xlab = "Number.of.Landline.wireless.telephones",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,37])
+qplot(Log_sin_inf[1:7000,37],
+      geom="histogram",
+      main = "Histogram for Number.of.Cellular.phone", 
+      xlab = "Number.of.Cellular.phone",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,38])
+qplot(Log_sin_inf[1:7000,38],
+      geom="histogram",
+      main = "Histogram for Number.of.Personal.Computer", 
+      xlab = "Number.of.Personal.Computer",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,39])
+qplot(Log_sin_inf[1:7000,39],
+      geom="histogram",
+      main = "Histogram for Number.of.Stove.with.Oven.Gas.Range", 
+      xlab = "Number.of.Stove.with.Oven.Gas.Range",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,40])
+qplot(Log_sin_inf[1:7000,40],
+      geom="histogram",
+      main = "Histogram for Number.of.Motorized.Banca", 
+      xlab = "Number.of.Motorized.Banca",  
+      fill=I("blue"), 
+      col=I("red"))
+
+summary(Log_sin_inf[1:7000,41])
+qplot(Log_sin_inf[1:7000,41],
+      geom="histogram",
+      main = "Histogram for Number.of.Motorcycle.Tricycle", 
+      xlab = "Number.of.Motorcycle.Tricycle",  
+      fill=I("blue"), 
+      col=I("red"))
+
+```
+
+Con esta transformación, hay algunas de las variables que podemos utilizar para nuestro modelo. Sin embargo hay otras que nos suponen un problema. Vemos que la mayoría presentan valores igual a 0, y que la frecuencia de dichos valores es extremadamente alta. 
+
+La población filipina tiene un gran número de familias que viven en condiciones extremas de pobreza (aunque desde 2018, su situación económica está mejorando considerablemente), por lo que no es de extrañar, que si estamos estudiando el income y lo enfrentamos con variables tales como gastos en gasto de carne, alchol, comunicación, móviles, tabaco, etc, tengamos a un gran grupo de familias que no gasten nada y muestren valores 0.
+
+Tras ver que esos valores 0 son claramente representativos de nuestra población y no tiene sentido eliminarlos ni transformarlos, nos surge la pregunta: ¿Hasta qué punto queremos perder la interpretabilidad de los datos?
+
+
+## 6. Análisis de correlación
+
+Recordamos las condiciones de cualquier modelo de regresión lineal múltiple:
+
+* Las variables tienen que tener distribución normal y ser simétricas
+* Las variables no pueden estar altamente correlacionadas entre sí
+
+Por lo tanto, para cumplir el siguiente paso, debemos de hacer un análisis de correlación de nuestras matrices. Inspeccionamos la matriz de correlación cruzada en las variables numéricas sin transformar, las normalizadas y las trasnformadas con el logaritmo en base 10.  
+
+```{r}
+#----- Cálculo de la matriz de correlaciones cruzadas----------
+
+# Para las variables numéricas sin transformar
+#cor_matrix <- round(cor(var_train_num),4)
+
+# Para las variables numéricas normalizadas
+#cor_matrix_norm <- round(cor(var_train_num_NORM),4)
+
+# Para las variables numéricas transformadas con el logaritmo en base 10
+```
+
+Quitamos las quitamos las variables que no tienen distribuciones normales/simétricas
+
+```{r}
+
+Log_reduced <- Log_sin_inf%>%select(
+-Restaurant.and.hotels.Expenditure,
+-Alcoholic.Beverages.Expenditure,    
+-Tobacco.Expenditure,                          
+-Imputed.House.Rental.Value,                 
+-Medical.Care.Expenditure,                     
+-Communication.Expenditure,                   
+-Education.Expenditure,                        
+-Total.number.of.family.members.employed,  
+-Special.Occasions.Expenditure,              
+-Crop.Farming.and.Gardening.expenses,
+-Total.Income.from.Entrepreneurial.Acitivites,
+-Number.of.bedrooms,                           
+-Number.of.Television,                         
+-Number.of.CD.VCD.DVD,                       
+-Number.of.Component.Stereo.set,                
+-Number.of.Refrigerator.Freezer,              
+-Number.of.Washing.Machine,                    
+-Number.of.Airconditioner,                     
+-Number.of.Car..Jeep..Van,                      
+-Number.of.Landline.wireless.telephones,       
+-Number.of.Cellular.phone,                      
+-Number.of.Personal.Computer,                 
+-Number.of.Stove.with.Oven.Gas.Range,           
+-Number.of.Motorized.Banca,                   
+-Number.of.Motorcycle.Tricycle)
+
+#cor_matrix_log <- round(cor(Log_sin_inf),4)
+cor_matrix_log_reduced <- round(cor(Log_reduced),4)
+```
+
+Visualizamos mediante un mapa de calor las correlaciones cruzadas en las variables numéricas sin transformar, las normalizadas y las transformadas con el log10. Finalmente, calculamos la diferencia entre la matriz sin normalizar y las otras dos, para ver como afectan las transformaciones
+
+```{r}
+#----- Mapa de calor de la matriz de correlaciones cruzadas----------
+
+# Para las variables numéricas sin transformar
+mapa_corr <- melt(cor_matrix)
+ggplot(data = mapa_corr, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
+
+# Para las variables numéricas normalizadas
+mapa_corr_norm <- melt(cor_matrix_norm)
+ggplot(data = mapa_corr_norm, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
+
+# Para las variables numéricas transformadas con el logaritmo en base 10
+mapa_corr_log <- melt(cor_matrix_log)
+ggplot(data = mapa_corr_log, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
+
+# Calculamos la diferencia entre la matriz sin normalizar y las otras dos, para ver como afectan las transformaciones
+
+dif_norm_vs_sin <- abs(cor_matrix-cor_matrix_norm)
+dif_log_vs_sin <- abs(cor_matrix_log-cor_matrix)
+
+mapa_corr_dif_norm <- melt(dif_norm_vs_sin)
+ggplot(data = mapa_corr_dif_norm, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
+
+mapa_corr_dif_log <- melt(dif_log_vs_sin)
+ggplot(data = mapa_corr_dif_log, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(axis.text.x = element_text(angle = 60, vjust= 1, size = 6, hjust = 1)) + theme(axis.text.y = element_text( vjust= 1, size = 5, hjust = 1))
+
+```
+
+## 7. Selección de variables y modelo
+
+Evitamos variables altamente correlacionadas entre sí, descartando de cada par la que más correlada esté con todas las demás.
+
+```{r}
+
+# ----Selección de variables---- #
+
+# Evitamos variables altamente correlacionadas entre sí, descartando de cada par la que más correlada esté con todas las demás (mediante findCorrelation)
+
+#sin_income <- var_train_num[,c(2:length(var_train_num))]
+sin_income_log <- Log_reduced[,c(2:length(Log_reduced))]
+
+#index_sin<-findCorrelation(cor(sin_income),cutoff =.5,verbose = TRUE,exact = TRUE)
+index_log<-findCorrelation(cor(sin_income_log),cutoff =.5,verbose = TRUE,exact = TRUE)
+
+#sin_income <- sin_income%>%select(-index_sin)
+sin_income_log <- sin_income_log%>%select(-index_log)
+
+#### var_train_num_NORM <- c(var_train_num_NORM)%>%select(-index_sin)
+
+# Con el nuevo conjunto de variables, hallamos la matriz de correlación
+
+# new_var_train_sin<-cbind(Total.Household.Income=var_train_num[,1],sin_income)
+# cor_mat<-cor(new_var_train_sin)
+# cor_mat<-cor_mat[,order(cor_mat[1,],decreasing = T)]
+# 
+# ggcorrplot(t(cor_mat), method = "circle") # Representación gráfica del mapa de calor
+
+
+new_var_train_log<-cbind(Total.Household.Income=Log_sin_inf[,1],sin_income_log,Household.Head.Age=var_train_num$Household.Head.Age)
+cor_mat_log<-cor(new_var_train_log)
+cor_mat_log<-cor_mat_log[,order(cor_mat_log[1,],decreasing = T)]
+
+ggcorrplot(t(cor_mat_log), method = "circle") # Representación gráfica del mapa de calor
+
+
+
+# Vamos a escoger las que tienen correlación > de 0.5
+
+Variables_ordenadas<-data.frame(t(cor_mat_log)[,'Total.Household.Income']) # Es para quedarme con la columna ordenada
+colnames(Variables_ordenadas)<-'Coef. Corr'
+View(Variables_ordenadas)
+
+# Las seleccionamos manualmente:
+rownames(Variables_ordenadas) # Para ayuda y no escribirlas ; Ctrl+C, Ctrl+V
+
+# Variables_ordenadas<-Variables_ordenadas %>% filter(`Coef. Corr` >0.5)
+# rownames(Variables_ordenadas)
+#is.list(listaaa[2:length(listaaa)])
+#var_independientes<-new_var_train_num%>%select(unlist(listaaa, use.names=FALSE)) OLD
+
+
+
+#----Ajuste, interpretación y diagnosis del modelo de regresión lineal múltiple----
+
+RLM<-lm(Total.Household.Income~Transportation.Expenditure
+          +Clothing..Footwear.and.Other.Wear.Expenditure
+          +Fruit.Expenditure
+          ,data=new_var_train_log)
+
+residuos <- rstandard(RLM)
+valores.ajustados <- fitted(RLM)
+plot(valores.ajustados, residuos)
+summary(RLM)
+
+qqnorm(residuos)
+qqline(residuos)# si da error eejecutarlo en consola par ver que sale algo y si en el rmd da error, ejecutar en otro chunk
+```
+
+```{r}
+# Otra forma de verlo es con el predict y queda chulo:
+
+#OJO HAY QUE TENER EN CUENTA QUE LOS DATOS DE TEST NO ESTÁN TRANSFORMADOS, POR LO QUE HAY QUE TRANSFORMARLOS
+pre_datos_testing<-datos_testing%>%select(Transportation.Expenditure
+          ,Clothing..Footwear.and.Other.Wear.Expenditure
+        ,Fruit.Expenditure)
+pre_datos_testing<-log(pre_datos_testing)
+pre_datos_testing <- replace(pre_datos_testing,pre_datos_testing=="-Inf",0) 
+ic <- predict(RLM,pre_datos_testing)
+
+Valores_reales<-log(datos_testing$Total.Household.Income)
+Valores_predichos<-ic
+
+residuos<-Valores_reales-Valores_predichos
+
+plot(Valrores_predichos,residuos)
+
+qqnorm(residuos)
+qqline(residuos)
+
+
+```
+
