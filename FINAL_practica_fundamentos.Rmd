@@ -27,7 +27,7 @@ Durante varios años, identificar un modelo de clasificación socio-económico �
 
 *Objetivo*: Predecir los ingresos de una familia filipina, basándse en los datos disponibles.
 *Pregunta*: A partir de un modelo de regresión lineal múltiple, ¿qué variables son las más adecuadas para predecir los ingresos?
-*Target* : La variable respuesta es el total de ingresos de cada familia filipina (Total.Household.Income) 
+*Target*: La variable respuesta es el total de ingresos de cada familia filipina (Total.Household.Income) 
 
 ## 3. Procedimiento
 
@@ -1879,12 +1879,20 @@ colnames(Variables_ordenadas)<-'Coef. Corr'
 View(Variables_ordenadas)
 
 
-# Selección manual:
+# Selección manual de variables
 
 rownames(Variables_ordenadas)
 
 
-#----Ajuste, interpretación y diagnosis del modelo de regresión lineal múltiple----
+```
+
+
+## 8. Ajuste, interpretación y diagnosis del modelo de regresión lineal múltiple
+
+
+
+```{r}
+
 
 RLM<-lm(Total.Household.Income~Transportation.Expenditure
           +Clothing..Footwear.and.Other.Wear.Expenditure
@@ -1897,23 +1905,23 @@ plot(valores.ajustados, residuos)
 summary(RLM)
 
 qqnorm(residuos)
-qqline(residuos)# si da error eejecutarlo en consola par ver que sale algo y si en el rmd da error, ejecutar en otro chunk
+qqline(residuos)
 
 
-```
+# ¡OJO! HAY QUE TENER EN CUENTA QUE LOS DATOS DE TEST/VALIDACIÓN NO ESTÁN TRANSFORMADOS, POR LO QUE HAY QUE HACERLO
 
-```{r}
-# Otra forma de verlo es con el predict y queda chulo:
-
-#OJO HAY QUE TENER EN CUENTA QUE LOS DATOS DE TEST NO ESTÁN TRANSFORMADOS, POR LO QUE HAY QUE TRANSFORMARLOS
 pre_datos_testing<-datos_testing%>%select(Transportation.Expenditure
           ,Clothing..Footwear.and.Other.Wear.Expenditure
         ,Fruit.Expenditure)
+
 pre_datos_testing<-log(pre_datos_testing)
+
 pre_datos_testing <- replace(pre_datos_testing,pre_datos_testing=="-Inf",0) 
+
 ic <- predict(RLM,pre_datos_testing)
 
 Valores_reales<-log(datos_testing$Total.Household.Income)
+
 Valores_predichos<-ic
 
 residuos<-Valores_reales-Valores_predichos
@@ -1921,6 +1929,7 @@ residuos<-Valores_reales-Valores_predichos
 plot(Valrores_predichos,residuos)
 
 qqnorm(residuos)
+
 qqline(residuos)
 
 
