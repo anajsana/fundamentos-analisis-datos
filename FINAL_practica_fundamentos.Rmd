@@ -82,6 +82,7 @@ A continuación, se realizará un resumen de los estadísticos principales de la
 # ----- Carga de datos -----
 
 datos<-read.csv(file.choose())
+datos_occupation <- datos
 
 # ----- Resumen numérico de las variables -----
 
@@ -933,7 +934,7 @@ Como parte final del análisis exploratorio de datos, se muestran algunas visual
 
 # Profesiones más comúnes en Filipinas
 
-by_common_jobs <- datos_training %>% 
+by_common_jobs <- datos_occupation %>% 
   group_by(Household.Head.Occupation) %>%
   summarise(Total = n()) %>%
   arrange(desc(Total)) %>%
@@ -944,7 +945,7 @@ ggplot(data = by_common_jobs) + geom_bar(mapping = aes(x = Household.Head.Occupa
 
 # Región y gastos
 
-by_region_educ <- datos_training %>%
+by_region_educ <- datos_occupation %>%
   group_by(Region, Education.Expenditure, Housing.and.water.Expenditure) %>% 
   summarise(Total = n()) %>%
   arrange(desc(Total)) %>% ungroup()
