@@ -1,6 +1,9 @@
 ---
 title: "Fundamentos análisis de datos - Práctica final"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
 ---
 
 # Fundamentos análisis de datos - Práctica final
@@ -52,7 +55,8 @@ Antes de proceder con la visualización gráfica de las variables (para tener un
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+
+```{r message=FALSE}
 
 # ----- Se cargan las librerías que serán necesarias ------
 
@@ -78,10 +82,9 @@ library(ggcorrplot)
 A continuación, se realizará un resumen de los estadísticos principales de las variables numéricas para ver su media, desviación típica, número total de muestras y valores faltanes en cada variable. Curiosamente, solo se encuentran datos faltantes en las variables categóricas, que más adelante se tratarán.
 
 ```{r}
-
 # ----- Carga de datos -----
 
-datos<-read.csv(file.choose())
+datos<-read.csv('Family_Income_and_Expenditure.csv',stringsAsFactors = TRUE)
 datos_occupation <- datos
 
 # ----- Resumen numérico de las variables -----
@@ -292,46 +295,46 @@ El último grupo de variables, corresponde al número de bienes adquiridos. Dich
 
 ```{r}
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.bedrooms)
+
 summary(datos$Number.of.bedrooms)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Refrigerator.Freezer)
+
 summary(datos$Number.of.Refrigerator.Freezer)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Washing.Machine)
+
 summary(datos$Number.of.Washing.Machine)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Airconditioner)
+
 summary(datos$Number.of.Airconditioner)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Car..Jeep..Van)
+
 summary(datos$Number.of.Car..Jeep..Van)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.CD.VCD.DVD)
+
 summary(datos$Number.of.CD.VCD.DVD)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Cellular.phone)
+
 summary(datos$Number.of.Cellular.phone)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Component.Stereo.set)
+
 summary(datos$Number.of.Component.Stereo.set)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Landline.wireless.telephones)
+
 summary(datos$Number.of.Landline.wireless.telephones)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Personal.Computer)
+
 summary(datos$Number.of.Personal.Computer)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Motorcycle.Tricycle)
+
 summary(datos$Number.of.Motorcycle.Tricycle)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Stove.with.Oven.Gas.Range)
+
 summary(datos$Number.of.Stove.with.Oven.Gas.Range)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Television)
+
 summary(datos$Number.of.Television)
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Number.of.Motorized.Banca)
+
 summary(datos$Number.of.Motorized.Banca)
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -382,25 +385,11 @@ table(var_train_cat$Type.of.Household)
 table(var_train_cat$Type.of.Building.House)
 table(var_train_cat$Type.of.Roof)
 table(var_train_cat$Type.of.Walls)
-table(var_train_cat$Number.of.bedrooms)
 table(var_train_cat$Tenure.Status)
 table(var_train_cat$Toilet.Facilities)
 table(var_train_cat$Electricity)
 table(var_train_cat$Electricity)
 table(var_train_cat$Main.Source.of.Water.Supply)
-table(var_train_cat$Number.of.Television)
-table(var_train_cat$Number.of.Television)
-table(var_train_cat$Number.of.CD.VCD.DVD)
-table(var_train_cat$Number.of.Component.Stereo.set)
-table(var_train_cat$Number.of.Refrigerator.Freezer)
-table(var_train_cat$Number.of.Washing.Machine)
-table(var_train_cat$Number.of.Airconditioner)
-table(var_train_cat$Number.of.Car..Jeep..Van)
-table(var_train_cat$Number.of.Landline.wireless.telephones)
-table(var_train_cat$Number.of.Cellular.phone)
-table(var_train_cat$Number.of.Personal.Computer)
-table(var_train_cat$Number.of.Stove.with.Oven.Gas.Range)
-table(var_train_cat$Number.of.Motorized.Banca)
 table(var_train_cat$Number.of.Motorcycle.Tricycle)
 table(var_train_cat$Household.Head.Highest.Grade.Completed)
 
@@ -422,26 +411,11 @@ prop.table(table(var_train_cat$Type.of.Household))
 prop.table(table(var_train_cat$Type.of.Building.House))
 prop.table(table(var_train_cat$Type.of.Roof))
 prop.table(table(var_train_cat$Type.of.Walls))
-prop.table(table(var_train_cat$Number.of.bedrooms))
 prop.table(table(var_train_cat$Tenure.Status))
 prop.table(table(var_train_cat$Toilet.Facilities))
 prop.table(table(var_train_cat$Electricity))
 prop.table(table(var_train_cat$Electricity))
 prop.table(table(var_train_cat$Main.Source.of.Water.Supply))
-prop.table(table(var_train_cat$Number.of.Television))
-prop.table(table(var_train_cat$Number.of.Television))
-prop.table(table(var_train_cat$Number.of.CD.VCD.DVD))
-prop.table(table(var_train_cat$Number.of.Component.Stereo.set))
-prop.table(table(var_train_cat$Number.of.Refrigerator.Freezer))
-prop.table(table(var_train_cat$Number.of.Washing.Machine))
-prop.table(table(var_train_cat$Number.of.Airconditioner))
-prop.table(table(var_train_cat$Number.of.Car..Jeep..Van))
-prop.table(table(var_train_cat$Number.of.Landline.wireless.telephones))
-prop.table(table(var_train_cat$Number.of.Cellular.phone))
-prop.table(table(var_train_cat$Number.of.Personal.Computer))
-prop.table(table(var_train_cat$Number.of.Stove.with.Oven.Gas.Range))
-prop.table(table(var_train_cat$Number.of.Motorized.Banca))
-prop.table(table(var_train_cat$Number.of.Motorcycle.Tricycle))
 prop.table(table(var_train_cat$Household.Head.Highest.Grade.Completed))
 ```
 
@@ -450,7 +424,7 @@ Al examinar las visualizaciones, la variable categórica `electricity` llama la 
 ```{r}
 
 CrossTable(var_train_cat$Region, var_train_cat$Electricity, prop.chisq = FALSE)
-CrossTable(var_train_cat$Household.Head.Class.of.Worker, var_train_cat$Number.of.Stove.with.Oven.Gas.Range, prop.chisq = FALSE)
+#CrossTable(var_train_cat$Household.Head.Class.of.Worker, var_train_cat$Number.of.Stove.with.Oven.Gas.Range, prop.chisq = FALSE)
 
 ```
 
@@ -930,7 +904,7 @@ Puede observarse que la mayoría de las variables están sesgadas a la derecha, 
 
 Como parte final del análisis exploratorio de datos, se muestran algunas visualizaciones interesantes donde observar el tipo de población de una familia filipina en 2017. Viendo estas gráficas, podría afirmarse que se trata de una población mayormente agraria, en la que abundan los trabajos de campo. Además, las familias de la Región `NAT` son aquellas que más gastos tienen.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 
 # Profesiones más comúnes en Filipinas
 
