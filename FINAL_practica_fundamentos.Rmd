@@ -6,8 +6,6 @@ output:
     code_folding: hide
 ---
 
-# Fundamentos análisis de datos - Práctica final
-
 **David Durán Prieto**
 **Gerardo Adrián Aguirre Vivar**
 **Ana Jiménez Santamaría**
@@ -87,19 +85,23 @@ A continuación, se realizará un resumen de los estadísticos principales de la
 datos<-read.csv('Family_Income_and_Expenditure.csv',stringsAsFactors = TRUE)
 datos_occupation <- datos
 
+```
+
+```{r}
 # ----- Resumen numérico de las variables -----
 
-summary(datos)
+kable(summary(datos)) %>%
+  kable_styling() %>%
+  scroll_box(width = "500px", height = "200px")
 
-# ----- Datos faltantes en el dataset -----
+```
 
-describe(datos)
+```{r}
 
 # ----- Coeficiente de simetria de cada una de las variables numéricas -----
 
 nums <- datos %>%
   select_if(is.numeric)
-skewness(nums)
 
 cat <- datos %>%
   select_if(is.factor)
@@ -470,439 +472,49 @@ barplot(prop.table(table(datos$Household.Head.Class.of.Worker,datos$Main.Source.
 Se dispone a ver la distribución y densidad de cada una de las variables cuantitativas sin transformar, es decir, las variables "en crudo". De esta manera, se pretende identificar aquellas con los datos más sesgados, y poder observar las distribuciones y rangos que presentan.
 
 ```{r}
+# Smaill multiple de las variables cuantitativas sin transformar
 
-# Histograma de las variables cuantitativas sin transformar
-
-summary(var_train_num$Total.Household.Income)
-qplot(var_train_num$Total.Household.Income,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Total Household Income", 
-      xlab = "Total Household Income",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(10000,12000000))
-
-summary(var_train_num$Total.Food.Expenditure)
-qplot(var_train_num$Total.Food.Expenditure,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Total Food Expenditure", 
-      xlab = "Total Food Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(2000,800000))
-
-summary(var_train_num$Bread.and.Cereals.Expenditure)
-qplot(var_train_num$Bread.and.Cereals.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Bread.and.Cereals.Expenditure", 
-      xlab = "Bread.and.Cereals.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,350000))
-
-summary(var_train_num$Total.Rice.Expenditure)
-qplot(var_train_num$Total.Rice.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Total Rice Expenditure", 
-      xlab = "Total Rice Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,350000))
-
-
-summary(var_train_num$Meat.Expenditure)
-qplot(var_train_num$Meat.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Meat.Expenditure", 
-      xlab = "Meat.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,270000))
-
-summary(var_train_num$Total.Fish.and..marine.products.Expenditure)
-qplot(var_train_num$Total.Fish.and..marine.products.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Total.Fish.and..marine.products.Expenditure", 
-      xlab = "Total.Fish.and..marine.products.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,190000))
-
-summary(var_train_num$Fruit.Expenditure)
-qplot(var_train_num$Fruit.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Fruit.Expenditure", 
-      xlab = "Fruit.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,70000))
-
-summary(var_train_num$Vegetables.Expenditure)
-qplot(var_train_num$Vegetables.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Vegetables.Expenditure", 
-      xlab = "Vegetables.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,80000))
-
-summary(var_train_num$Restaurant.and.hotels.Expenditure)
-qplot(var_train_num$Restaurant.and.hotels.Expenditure,
-      geom="histogram",
-      binwidth = 5000,
-      main = "Histogram for Restaurant.and.hotels.Expenditure", 
-      xlab = "Restaurant.and.hotels.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-5000,520000))
-
-summary(var_train_num$Alcoholic.Beverages.Expenditure)
-qplot(var_train_num$Alcoholic.Beverages.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Alcoholic.Beverages.Expenditure", 
-      xlab = "Alcoholic.Beverages.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,36000))
-
-summary(var_train_num$Tobacco.Expenditure)
-qplot(var_train_num$Tobacco.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Tobacco.Expenditure", 
-      xlab = "Tobacco.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,100000))
-
-
-summary(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure)
-qplot(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Clothing..Footwear.and.Other.Wear.Expenditure", 
-      xlab = "Clothing..Footwear.and.Other.Wear.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-10000,360000))
-
-summary(var_train_num$Housing.and.water.Expenditure)
-qplot(var_train_num$Housing.and.water.Expenditure,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Housing.and.water.Expenditure", 
-      xlab = "Housing.and.water.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(2000,842000))
-
-summary(var_train_num$Imputed.House.Rental.Value)
-qplot(var_train_num$Imputed.House.Rental.Value,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Imputed.House.Rental.Value", 
-      xlab = "Imputed.House.Rental.Value",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,730000))
-
-summary(var_train_num$Medical.Care.Expenditure)
-qplot(var_train_num$Medical.Care.Expenditure,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Medical.Care.Expenditure", 
-      xlab = "Medical.Care.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-10000,1000000))
-
-summary(var_train_num$Transportation.Expenditure)
-qplot(var_train_num$Transportation.Expenditure,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Transportation.Expenditure", 
-      xlab = "Transportation.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-10000,500000))
-
-summary(var_train_num$Communication.Expenditure)
-qplot(var_train_num$Communication.Expenditure,
-      geom="histogram",
-      binwidth = 1000,
-      main = "Histogram for Communication.Expenditure", 
-      xlab = "Communication.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1000,100000))
-
-
-summary(var_train_num$Education.Expenditure)
-qplot(var_train_num$Education.Expenditure,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Education.Expenditure", 
-      xlab = "Education.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-10000,340000))
-
-
-summary(var_train_num$Miscellaneous.Goods.and.Services.Expenditure)
-qplot(var_train_num$Miscellaneous.Goods.and.Services.Expenditure,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Miscellaneous.Goods.and.Services.Expenditure", 
-      xlab = "Miscellaneous.Goods.and.Services.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-10000,320000))
-
-summary(var_train_num$Special.Occasions.Expenditure)
-qplot(var_train_num$Special.Occasions.Expenditure,
-      geom="histogram",
-      binwidth = 10000,
-      main = "Histogram for Special.Occasions.Expenditure", 
-      xlab = "Special.Occasions.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-10000,310000))
-
-summary(var_train_num$Crop.Farming.and.Gardening.expenses)
-qplot(var_train_num$Crop.Farming.and.Gardening.expenses,
-      geom="histogram",
-      binwidth = 100000,
-      main = "Histogram for Crop.Farming.and.Gardening.expenses", 
-      xlab = "Crop.Farming.and.Gardening.expenses",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-100000,3800000))
-
-summary(var_train_num$Total.Income.from.Entrepreneurial.Acitivites)
-qplot(var_train_num$Total.Income.from.Entrepreneurial.Acitivites,
-      geom="histogram",
-      binwidth = 100000,
-      main = "Histogram for Total.Income.from.Entrepreneurial.Acitivites", 
-      xlab = "Total.Income.from.Entrepreneurial.Acitivites",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-100000,4800000))
-
-summary(var_train_num$Household.Head.Age)
-qplot(var_train_num$Household.Head.Age,
-      geom="histogram",
-      binwidth = 5,
-      main = "Histogram for Household.Head.Age", 
-      xlab = "Household.Head.Age",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(10,100))
-
-summary(var_train_num$Total.Number.of.Family.members)
-qplot(var_train_num$Total.Number.of.Family.members,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Total.Number.of.Family.members", 
-      xlab = "Total.Number.of.Family.members",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,23))
-
-summary(var_train_num$Total.number.of.family.members.employed)
-qplot(var_train_num$Total.number.of.family.members.employed,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Total.number.of.family.members.employed", 
-      xlab = "Total.number.of.family.members.employed",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,10))
-
-summary(var_train_num$House.Floor.Area)
-qplot(var_train_num$House.Floor.Area,
-      geom="histogram",
-      binwidth = 25,
-      main = "Histogram for House.Floor.Area", 
-      xlab = "House.Floor.Area",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-25,1000))
-
-
-summary(var_train_num$House.Age)
-qplot(var_train_num$House.Age,
-      geom="histogram",
-      binwidth = 5,
-      main = "Histogram for House.Age", 
-      xlab = "House.Age",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,130))
-
-summary(var_train_num$Number.of.bedrooms)
-qplot(var_train_num$Number.of.bedrooms,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.bedrooms", 
-      xlab = "Number.of.bedrooms",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,10))
-
-
-summary(var_train_num$Number.of.Television)
-qplot(var_train_num$Number.of.Television,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Television", 
-      xlab = "Number.of.Television",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,7))
-
-
-summary(var_train_num$Number.of.CD.VCD.DVD)
-qplot(var_train_num$Number.of.CD.VCD.DVD,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.CD.VCD.DVD", 
-      xlab = "Number.of.CD.VCD.DVD",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,7))
-
-summary(var_train_num$Number.of.Component.Stereo.set)
-qplot(var_train_num$Number.of.Component.Stereo.set,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Component.Stereo.set", 
-      xlab = "Number.of.Component.Stereo.set",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,7))
-
-
-summary(var_train_num$Number.of.Refrigerator.Freezer)
-qplot(var_train_num$Number.of.Refrigerator.Freezer,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Refrigerator.Freezer", 
-      xlab = "Number.of.Refrigerator.Freezer",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,7))
-
-
-summary(var_train_num$Number.of.Washing.Machine)
-qplot(var_train_num$Number.of.Washing.Machine,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Washing.Machine", 
-      xlab = "Number.of.Washing.Machine",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,5))
-
-
-summary(var_train_num$Number.of.Airconditioner)
-qplot(var_train_num$Number.of.Airconditioner,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Airconditioner", 
-      xlab = "Number.of.Airconditioner",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,7))
-
-
-summary(var_train_num$Number.of.Car..Jeep..Van)
-qplot(var_train_num$Number.of.Car..Jeep..Van,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Car..Jeep..Van", 
-      xlab = "Number.of.Car..Jeep..Van",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,6))
-
-
-summary(var_train_num$Number.of.Landline.wireless.telephones)
-qplot(var_train_num$Number.of.Landline.wireless.telephones,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Landline.wireless.telephones", 
-      xlab = "Number.of.Landline.wireless.telephones",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,7))
-
-summary(var_train_num$Number.of.Cellular.phone)
-qplot(var_train_num$Number.of.Cellular.phone,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Cellular.phone", 
-      xlab = "Number.of.Cellular.phone",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,12))
-
-summary(var_train_num$Number.of.Personal.Computer)
-qplot(var_train_num$Number.of.Personal.Computer,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Personal.Computer", 
-      xlab = "Number.of.Personal.Computer",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,8))
-
-summary(var_train_num$Number.of.Stove.with.Oven.Gas.Range)
-qplot(var_train_num$Number.of.Stove.with.Oven.Gas.Range,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Stove.with.Oven.Gas.Range", 
-      xlab = "Number.of.Stove.with.Oven.Gas.Range",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,4))
-
-summary(var_train_num$Number.of.Motorized.Banca)
-qplot(var_train_num$Number.of.Motorized.Banca,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Motorized.Banca", 
-      xlab = "Number.of.Motorized.Banca",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,5))
-
-summary(var_train_num$Number.of.Motorcycle.Tricycle)
-qplot(var_train_num$Number.of.Motorcycle.Tricycle,
-      geom="histogram",
-      binwidth = 1,
-      main = "Histogram for Number.of.Motorcycle.Tricycle", 
-      xlab = "Number.of.Motorcycle.Tricycle",  
-      fill=I("blue"), 
-      col=I("red"), 
-      xlim=c(-1,7))
-
+var_train_num %>% 
+  select_if(is.numeric) %>% 
+  gather() %>% 
+  ggplot(aes(x = value)) +
+    geom_density() +
+    facet_wrap(~key, scales = 'free')
 ```
 
 Puede observarse que la mayoría de las variables están sesgadas a la derecha, una característica común cuando tratamos con datos socioeconómicos. A simple vista, muy pocas tienen una distribución simétrica, como sea el caso de la distribución normal de la variable "House.Age".
 
-
 ### 3. Representación datos cualitativos y cuantitativos
 
 Como parte final del análisis exploratorio de datos, se muestran algunas visualizaciones interesantes donde observar el tipo de población de una familia filipina en 2017. Viendo estas gráficas, podría afirmarse que se trata de una población mayormente agraria, en la que abundan los trabajos de campo. Además, las familias de la Región `NAT` son aquellas que más gastos tienen.
+
+Para esta sección nos hemos planteado primero una serie de preguntas interesantes que puedan ser respondidas a través de visualizaciónes:
+
+* *¿Dónde se encuentra el mayor número de nuestra población respecto de su income?* vemos que la mayoría ronda por debajo de los 500,000 $ por familia al año
+
+```{r message=FALSE, warning=FALSE}
+
+hist(datos_training$Total.Household.Income)
+comun <- datos_training %>%
+  filter(Total.Household.Income < 500000)
+
+```
+
+* *Cuál es la relación entre el consumo de comida y ropa respecto al income familiar?* Decidimos además filtrar por regiones y visualizar la cantidad el income familiar por el tamaño de la burbuja
+
+```{r}
+
+# bubble plot para ver la relación entre consumo de comida, ropa respecto al income (tamaño de la burbuja) dividido por regiones(ciudades)
+
+datos_training %>%
+  ggplot(aes(x=Clothing..Footwear.and.Other.Wear.Expenditure, y=Total.Food.Expenditure, size = Total.Household.Income, color = Region)) +
+    geom_point(alpha=0.5) +
+    scale_size(range = c(.1, 24), name="Income")
+
+```
+
+
+* *¿Cuáles son las profesiones más comunes de una familia Filipina?* como indicábamos al principio de esta sección, vemos que la mayoría es una población agraria 
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -916,7 +528,11 @@ by_common_jobs <- datos_occupation %>%
 
 
 ggplot(data = by_common_jobs) + geom_bar(mapping = aes(x = Household.Head.Occupation, y = Total), stat = "identity") + labs(title="Trabajos más comunes en familias filipinas") + theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
 
+* *¿Cuáles son las regiones de Filipinas con más gastos?* Nuestros datos tienen un gran número de valores atípicos, por lo que para ver el boxplot es necesario aplicar un logaritmo en base 10. Vemos que las familias de la Región `NAT` son aquellas que más gastos tienen
+
+```{r}
 # Región y gastos
 
 by_region_educ <- datos_occupation %>%
