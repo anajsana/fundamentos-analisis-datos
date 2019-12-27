@@ -74,6 +74,8 @@ library(caret)
 library(gmodels)
 library(reshape)
 library(ggcorrplot)
+library(knitr)
+library(kableExtra)
 
 ```
 
@@ -82,7 +84,7 @@ A continuación, se realizará un resumen de los estadísticos principales de la
 ```{r}
 # ----- Carga de datos -----
 
-datos<-read.csv('Family_Income_and_Expenditure.csv',stringsAsFactors = TRUE)
+datos<-read.csv('Family Income and Expenditure.csv',stringsAsFactors = TRUE)
 datos_occupation <- datos
 
 ```
@@ -98,7 +100,7 @@ kable(summary(datos)) %>%
 
 ```{r}
 
-# ----- Coeficiente de simetria de cada una de las variables numéricas -----
+# ----- División de variables en categóricas y numéricas -----
 
 nums <- datos %>%
   select_if(is.numeric)
@@ -419,6 +421,7 @@ prop.table(table(var_train_cat$Electricity))
 prop.table(table(var_train_cat$Electricity))
 prop.table(table(var_train_cat$Main.Source.of.Water.Supply))
 prop.table(table(var_train_cat$Household.Head.Highest.Grade.Completed))
+
 ```
 
 Al examinar las visualizaciones, la variable categórica `electricity` llama la atención. Se procede a comparar la variable electricity por regiones, ya que puede dar una idea acerca de en qué regiones puede existir mayor nivel de pobreza. Esto se realiza mediante la función `cross-table`, que nos mostrará las frecuencias absolutas, relativas en relación a la fila, frecuencias relativas en relación a la columna y frecuencias relativas globales.
@@ -426,7 +429,6 @@ Al examinar las visualizaciones, la variable categórica `electricity` llama la 
 ```{r}
 
 CrossTable(var_train_cat$Region, var_train_cat$Electricity, prop.chisq = FALSE)
-#CrossTable(var_train_cat$Household.Head.Class.of.Worker, var_train_cat$Number.of.Stove.with.Oven.Gas.Range, prop.chisq = FALSE)
 
 ```
 
@@ -469,52 +471,491 @@ barplot(prop.table(table(datos$Household.Head.Class.of.Worker,datos$Main.Source.
 
 ### 4.3. Análisis variables cuantitativas
 
-Se dispone a ver la distribución y densidad de cada una de las variables cuantitativas sin transformar, es decir, las variables "en crudo". De esta manera, se pretende identificar aquellas con los datos más sesgados, y poder observar las distribuciones y rangos que presentan.
+Se dispone a ver la distribución y densidad de cada una de las variables cuantitativas sin transformar, es decir, las variables "en crudo". De esta manera, se pretende identificar aquellas con los datos más sesgados, y poder observar las distribuciones y rangos que presentan. Se irán visualizando las distribuciones de las variables, agrupadas de 6 en 6 para facilitar la visualización.
 
 ```{r}
-# Smaill multiple de las variables cuantitativas sin transformar
 
-var_train_num %>% 
-  select_if(is.numeric) %>% 
-  gather() %>% 
-  ggplot(aes(x = value)) +
-    geom_density() +
-    facet_wrap(~key, scales = 'free')
+# ----- Histograma de las variables cuantitativas sin transformar -----
+
+# Primeras 6 variables
+
+summary(var_train_num$Total.Household.Income)
+summary(var_train_num$Total.Food.Expenditure)
+summary(var_train_num$Bread.and.Cereals.Expenditure)
+summary(var_train_num$Total.Rice.Expenditure)
+summary(var_train_num$Meat.Expenditure)
+summary(var_train_num$Total.Fish.and..marine.products.Expenditure)
+
+
+layout(matrix(c(1:6), nrow=2, byrow=FALSE))
+layout.show(6)
+
+
+qplot(var_train_num$Total.Household.Income,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Total Household Income", 
+      xlab = "Total Household Income",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(10000,12000000))
+qplot(var_train_num$Total.Food.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Total Food Expenditure", 
+      xlab = "Total Food Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(2000,800000))
+qplot(var_train_num$Bread.and.Cereals.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Bread.and.Cereals.Expenditure", 
+      xlab = "Bread.and.Cereals.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,350000))
+qplot(var_train_num$Total.Rice.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Total Rice Expenditure", 
+      xlab = "Total Rice Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,350000))
+qplot(var_train_num$Meat.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Meat.Expenditure", 
+      xlab = "Meat.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,270000))
+qplot(var_train_num$Total.Fish.and..marine.products.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Total.Fish.and..marine.products.Expenditure", 
+      xlab = "Total.Fish.and..marine.products.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,190000))
+
+
+# Siguientes 6 variables
+
+summary(var_train_num$Fruit.Expenditure)
+summary(var_train_num$Vegetables.Expenditure)
+summary(var_train_num$Restaurant.and.hotels.Expenditure)
+summary(var_train_num$Alcoholic.Beverages.Expenditure)
+summary(var_train_num$Tobacco.Expenditure)
+summary(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure)
+
+
+layout(matrix(c(1:6), nrow=2, byrow=FALSE))
+layout.show(6)
+
+
+qplot(var_train_num$Fruit.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Fruit.Expenditure", 
+      xlab = "Fruit.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,70000))
+qplot(var_train_num$Vegetables.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Vegetables.Expenditure", 
+      xlab = "Vegetables.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,80000))
+qplot(var_train_num$Restaurant.and.hotels.Expenditure,
+      geom="histogram",
+      binwidth = 5000,
+      main = "Histogram for Restaurant.and.hotels.Expenditure", 
+      xlab = "Restaurant.and.hotels.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-5000,520000))
+qplot(var_train_num$Alcoholic.Beverages.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Alcoholic.Beverages.Expenditure", 
+      xlab = "Alcoholic.Beverages.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,36000))
+qplot(var_train_num$Tobacco.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Tobacco.Expenditure", 
+      xlab = "Tobacco.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,100000))
+qplot(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Clothing..Footwear.and.Other.Wear.Expenditure", 
+      xlab = "Clothing..Footwear.and.Other.Wear.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,360000))
+
+
+# Siguientes 6 variables
+
+
+summary(var_train_num$Housing.and.water.Expenditure)
+summary(var_train_num$Imputed.House.Rental.Value)
+summary(var_train_num$Medical.Care.Expenditure)
+summary(var_train_num$Transportation.Expenditure)
+summary(var_train_num$Communication.Expenditure)
+summary(var_train_num$Education.Expenditure)
+
+layout(matrix(c(1:6), nrow=2, byrow=FALSE))
+layout.show(6)
+
+
+qplot(var_train_num$Housing.and.water.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Housing.and.water.Expenditure", 
+      xlab = "Housing.and.water.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(2000,842000))
+qplot(var_train_num$Imputed.House.Rental.Value,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Imputed.House.Rental.Value", 
+      xlab = "Imputed.House.Rental.Value",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,730000))
+qplot(var_train_num$Medical.Care.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Medical.Care.Expenditure", 
+      xlab = "Medical.Care.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,1000000))
+qplot(var_train_num$Transportation.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Transportation.Expenditure", 
+      xlab = "Transportation.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,500000))
+qplot(var_train_num$Communication.Expenditure,
+      geom="histogram",
+      binwidth = 1000,
+      main = "Histogram for Communication.Expenditure", 
+      xlab = "Communication.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1000,100000))
+qplot(var_train_num$Education.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Education.Expenditure", 
+      xlab = "Education.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,340000))
+
+
+
+# Siguientes 6 variables
+
+summary(var_train_num$Miscellaneous.Goods.and.Services.Expenditure)
+summary(var_train_num$Special.Occasions.Expenditure)
+summary(var_train_num$Crop.Farming.and.Gardening.expenses)
+summary(var_train_num$Total.Income.from.Entrepreneurial.Acitivites)
+summary(var_train_num$Household.Head.Age)
+summary(var_train_num$Total.Number.of.Family.members)
+
+
+grid.arrange()
+
+plot(var_train_num$Miscellaneous.Goods.and.Services.Expenditure)
+
+qplot(var_train_num$Miscellaneous.Goods.and.Services.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Miscellaneous.Goods.and.Services.Expenditure", 
+      xlab = "Miscellaneous.Goods.and.Services.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,320000))
+qplot(var_train_num$Special.Occasions.Expenditure,
+      geom="histogram",
+      binwidth = 10000,
+      main = "Histogram for Special.Occasions.Expenditure", 
+      xlab = "Special.Occasions.Expenditure",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-10000,310000))
+qplot(var_train_num$Crop.Farming.and.Gardening.expenses,
+      geom="histogram",
+      binwidth = 100000,
+      main = "Histogram for Crop.Farming.and.Gardening.expenses", 
+      xlab = "Crop.Farming.and.Gardening.expenses",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-100000,3800000))
+qplot(var_train_num$Total.Income.from.Entrepreneurial.Acitivites,
+      geom="histogram",
+      binwidth = 100000,
+      main = "Histogram for Total.Income.from.Entrepreneurial.Acitivites", 
+      xlab = "Total.Income.from.Entrepreneurial.Acitivites",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-100000,4800000))
+qplot(var_train_num$Household.Head.Age,
+      geom="histogram",
+      binwidth = 5,
+      main = "Histogram for Household.Head.Age", 
+      xlab = "Household.Head.Age",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(10,100))
+qplot(var_train_num$Total.Number.of.Family.members,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Total.Number.of.Family.members", 
+      xlab = "Total.Number.of.Family.members",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,23))
+
+
+
+summary(var_train_num$Total.number.of.family.members.employed)
+qplot(var_train_num$Total.number.of.family.members.employed,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Total.number.of.family.members.employed", 
+      xlab = "Total.number.of.family.members.employed",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,10))
+summary(var_train_num$House.Floor.Area)
+qplot(var_train_num$House.Floor.Area,
+      geom="histogram",
+      binwidth = 25,
+      main = "Histogram for House.Floor.Area", 
+      xlab = "House.Floor.Area",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-25,1000))
+summary(var_train_num$House.Age)
+qplot(var_train_num$House.Age,
+      geom="histogram",
+      binwidth = 5,
+      main = "Histogram for House.Age", 
+      xlab = "House.Age",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,130))
+summary(var_train_num$Number.of.bedrooms)
+qplot(var_train_num$Number.of.bedrooms,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.bedrooms", 
+      xlab = "Number.of.bedrooms",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,10))
+summary(var_train_num$Number.of.Television)
+qplot(var_train_num$Number.of.Television,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Television", 
+      xlab = "Number.of.Television",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+summary(var_train_num$Number.of.CD.VCD.DVD)
+qplot(var_train_num$Number.of.CD.VCD.DVD,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.CD.VCD.DVD", 
+      xlab = "Number.of.CD.VCD.DVD",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+summary(var_train_num$Number.of.Component.Stereo.set)
+qplot(var_train_num$Number.of.Component.Stereo.set,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Component.Stereo.set", 
+      xlab = "Number.of.Component.Stereo.set",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+summary(var_train_num$Number.of.Refrigerator.Freezer)
+qplot(var_train_num$Number.of.Refrigerator.Freezer,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Refrigerator.Freezer", 
+      xlab = "Number.of.Refrigerator.Freezer",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+summary(var_train_num$Number.of.Washing.Machine)
+qplot(var_train_num$Number.of.Washing.Machine,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Washing.Machine", 
+      xlab = "Number.of.Washing.Machine",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,5))
+summary(var_train_num$Number.of.Airconditioner)
+qplot(var_train_num$Number.of.Airconditioner,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Airconditioner", 
+      xlab = "Number.of.Airconditioner",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+summary(var_train_num$Number.of.Car..Jeep..Van)
+qplot(var_train_num$Number.of.Car..Jeep..Van,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Car..Jeep..Van", 
+      xlab = "Number.of.Car..Jeep..Van",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,6))
+summary(var_train_num$Number.of.Landline.wireless.telephones)
+qplot(var_train_num$Number.of.Landline.wireless.telephones,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Landline.wireless.telephones", 
+      xlab = "Number.of.Landline.wireless.telephones",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+summary(var_train_num$Number.of.Cellular.phone)
+qplot(var_train_num$Number.of.Cellular.phone,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Cellular.phone", 
+      xlab = "Number.of.Cellular.phone",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,12))
+summary(var_train_num$Number.of.Personal.Computer)
+qplot(var_train_num$Number.of.Personal.Computer,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Personal.Computer", 
+      xlab = "Number.of.Personal.Computer",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,8))
+summary(var_train_num$Number.of.Stove.with.Oven.Gas.Range)
+qplot(var_train_num$Number.of.Stove.with.Oven.Gas.Range,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Stove.with.Oven.Gas.Range", 
+      xlab = "Number.of.Stove.with.Oven.Gas.Range",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,4))
+summary(var_train_num$Number.of.Motorized.Banca)
+qplot(var_train_num$Number.of.Motorized.Banca,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Motorized.Banca", 
+      xlab = "Number.of.Motorized.Banca",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,5))
+summary(var_train_num$Number.of.Motorcycle.Tricycle)
+qplot(var_train_num$Number.of.Motorcycle.Tricycle,
+      geom="histogram",
+      binwidth = 1,
+      main = "Histogram for Number.of.Motorcycle.Tricycle", 
+      xlab = "Number.of.Motorcycle.Tricycle",  
+      fill=I("blue"), 
+      col=I("red"), 
+      xlim=c(-1,7))
+
+
 ```
 
 Puede observarse que la mayoría de las variables están sesgadas a la derecha, una característica común cuando tratamos con datos socioeconómicos. A simple vista, muy pocas tienen una distribución simétrica, como sea el caso de la distribución normal de la variable "House.Age".
 
-### 3. Representación datos cualitativos y cuantitativos
+### 4.4. Representación datos cualitativos y cuantitativos
 
-Como parte final del análisis exploratorio de datos, se muestran algunas visualizaciones interesantes donde observar el tipo de población de una familia filipina en 2017. Viendo estas gráficas, podría afirmarse que se trata de una población mayormente agraria, en la que abundan los trabajos de campo. Además, las familias de la Región `NAT` son aquellas que más gastos tienen.
+Como parte final del análisis exploratorio de datos, se muestran algunas visualizaciones interesantes sobre el tipo de población filipina en 2017. Viendo estas gráficas, podría afirmarse que se trata de una población mayormente agraria, en la que abundan los trabajos de campo. Además, las familias de la Región `NAT` son aquellas que más gastos tienen.
 
-Para esta sección nos hemos planteado primero una serie de preguntas interesantes que puedan ser respondidas a través de visualizaciónes:
+Para esta sección, han sido planteadas una serie de preguntas interesantes que pueden ser respondidas a través de visualizaciones:
 
-* *¿Dónde se encuentra el mayor número de nuestra población respecto de su income?* vemos que la mayoría ronda por debajo de los 500,000 $ por familia al año
+*¿Qué porcentaje de la población tiene unos ingresos inferiores a 400000$ anuales* 
+
+La mayoría ronda por debajo de los 400000 pesos filipinos por familia al año (en torno al 85%). A continuación, se realiza una subdivisión del conjunto de datos en 3 subconjuntos: familias con ingresos inferiores a 400000 pesos filipinos, familias con ingresos entre 400000 y 1100000 pesos filipinos, y el resto. Mediante diagramas de caja (boxplot) se observa como esta división permite tener 3 grupos de familias en función de sus ingresos sin valores atípicos en los dos primeros, pese a observar mayor dispersión (desigualdad de ingresos) en el grupo más favorecido económicamente.
 
 ```{r message=FALSE, warning=FALSE}
 
-hist(datos_training$Total.Household.Income)
-comun <- datos_training %>%
-  filter(Total.Household.Income < 500000)
+grupo1 <- datos_training %>%
+  filter(Total.Household.Income < 400000)
+
+ceros_restaurant <- datos_training %>% filter(Restaurant.and.hotels.Expenditure < 1)
+
+grupo2y3 <- datos_training %>%
+  filter(Total.Household.Income >= 400000)
+
+grupo2 <- grupo2y3 %>%
+  filter(Total.Household.Income < 1000000)
+
+grupo3 <- grupo2y3 %>%
+  filter(Total.Household.Income >= 1000000)
+
+summary(datos_training$Total.Household.Income)
+
+boxplot(datos_training$Total.Household.Income,
+        border = c("red"))
+
+boxplot(grupo1$Total.Household.Income,
+        border = c("red"))
+
+boxplot(grupo2$Total.Household.Income,
+        border = c("blue"))
+
+boxplot(grupo3$Total.Household.Income,
+        border = c("green"))
+
 
 ```
 
-* *Cuál es la relación entre el consumo de comida y ropa respecto al income familiar?* Decidimos además filtrar por regiones y visualizar la cantidad el income familiar por el tamaño de la burbuja
+* *Cuál es la relación entre el consumo de comida y ropa respecto a los ingresos familiares?* 
+
+Se decide filtrar por regiones y visualizar la cantidad de ingresos por familia a partir del tamaño de las burbujas.
 
 ```{r}
 
-# bubble plot para ver la relación entre consumo de comida, ropa respecto al income (tamaño de la burbuja) dividido por regiones(ciudades)
+# Bubble plot para ver la relación entre consumo de comida y de ropa respecto a los ingresos (tamaño de la burbuja) dividido por regiones (ciudades)
 
 datos_training %>%
-  ggplot(aes(x=Clothing..Footwear.and.Other.Wear.Expenditure, y=Total.Food.Expenditure, size = Total.Household.Income, color = Region)) +
+  ggplot(aes(x=Clothing..Footwear.and.Other.Wear.Expenditure, y=Total.Food.Expenditure, size = Total.Household.Income, color = Region, scientific=F)) +
     geom_point(alpha=0.5) +
-    scale_size(range = c(.1, 24), name="Income")
+    scale_size(range = c(.1, 24), name="Ingresos")
 
 ```
 
 
-* *¿Cuáles son las profesiones más comunes de una familia Filipina?* como indicábamos al principio de esta sección, vemos que la mayoría es una población agraria 
+* *¿Cuáles son las profesiones más comunes de una familia Filipina?* 
+
+Como se indicaba al principio de esta sección, la mayoría es una población agraria.
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -530,9 +971,12 @@ by_common_jobs <- datos_occupation %>%
 ggplot(data = by_common_jobs) + geom_bar(mapping = aes(x = Household.Head.Occupation, y = Total), stat = "identity") + labs(title="Trabajos más comunes en familias filipinas") + theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
-* *¿Cuáles son las regiones de Filipinas con más gastos?* Nuestros datos tienen un gran número de valores atípicos, por lo que para ver el boxplot es necesario aplicar un logaritmo en base 10. Vemos que las familias de la Región `NAT` son aquellas que más gastos tienen
+* *¿Cuáles son las regiones de Filipinas con más gastos?* 
+
+Los datos tienen un gran número de valores atípicos, por lo que para ver el boxplot es necesario aplicar un logaritmo en base 10. Vemos que las familias de la Región `NAT` son aquellas que más gastos tienen
 
 ```{r}
+
 # Región y gastos
 
 by_region_educ <- datos_occupation %>%
@@ -552,11 +996,19 @@ ggplot(by_region_educ, aes(x=Region, y=Education.Expenditure)) + geom_boxplot(co
 
 ### 5.1 Método KNN
 
-Una vez hecho el análisis EDA, con un mejor conocimiento de los datos disponibles, es hora de empezar a prepararlos para diseñar el modelo. El primer paso es un diagnóstico de valores faltantes, que tendremos que imputar con valores factibles.
+Una vez hecho el análisis EDA, con un mejor conocimiento de los datos disponibles, es hora de empezar a prepararlos para diseñar el modelo. 
 
-Se recuerda que, a partir de ahora, se trabajará con el conjunto de datos `train`, ya que los datos `test` no serán utilizados hasta la última parte de este trabajo.
+El primer paso es un diagnóstico de valores faltantes, que tendremos que imputar con valores factibles.
+
+Se recuerda que, a partir de ahora, se trabajará con el conjunto de datos `train`, ya que los datos `test` no serán utilizados hasta la última parte de este trabajo. Además, a la vista del apartado 4.4., se decide trabajar con el grupo 1, para evitar tener una segmentación de la población.
+  
   
 ```{r}
+
+
+datos_training <- grupo1
+var_train_cat <- datos_training%>%select_if(is.factor)
+var_train_num <- datos_training%>%select_if(is.numeric)
 
 # ----- Detección e imputación de datos faltantes -----
 
@@ -659,355 +1111,6 @@ Para utilizar un modelo de regresión lineal múltiple, es muy conveniente que s
 
 Por lo tanto, para poder aplicar un modelo de regresión multiple a las variables numéricas del presente trabajo, es necesario plantear una transformación para que se acerquen lo más posible a una distribución normal. Se recuerda que durante el análisis eda, se constató que la mayoría de las variables mostraban un sesgo a la derecha, lo cual podría estropear el diseño del modelo (distribuciones no normales).
 
-```{r}
-
-# Normalización de las variables numericas usando scale (media 0 y desviación típica 1)
-
-var_train_num_NORM <- (scale(var_train_num,center=T,scale=T))
-
-
-# Histogramas de las variables cuantitativas normalizadas
-
-summary(var_train_num_NORM[1:7000,1])
-qplot(var_train_num_NORM[1:7000,1],
-      geom="histogram",
-      main = "Histogram for Total Household Income", 
-      xlab = "Total Household Income",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,2])
-qplot(var_train_num_NORM[1:7000,2],
-      geom="histogram",
-      main = "Histogram for Total Food Expenditure", 
-      xlab = "Total Food Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,3])
-qplot(var_train_num_NORM[1:7000,3],
-      geom="histogram",
-      main = "Histogram for Bread.and.Cereals.Expenditure", 
-      xlab = "Bread.and.Cereals.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,4])
-qplot(var_train_num_NORM[1:7000,4],
-      geom="histogram",
-      main = "Histogram for Total Rice Expenditure", 
-      xlab = "Total Rice Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,5])
-qplot(var_train_num_NORM[1:7000,5],
-      geom="histogram",
-      main = "Histogram for Meat.Expenditure", 
-      xlab = "Meat.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,6])
-qplot(var_train_num_NORM[1:7000,6],
-      geom="histogram",
-      main = "Histogram for Total.Fish.and..marine.products.Expenditure", 
-      xlab = "Total.Fish.and..marine.products.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,7])
-qplot(var_train_num_NORM[1:7000,7],
-      geom="histogram",
-      main = "Histogram for Fruit.Expenditure", 
-      xlab = "Fruit.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,8])
-qplot(var_train_num_NORM[1:7000,8],
-      geom="histogram",
-      main = "Histogram for Vegetables.Expenditure", 
-      xlab = "Vegetables.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,9])
-qplot(var_train_num_NORM[1:7000,9],
-      geom="histogram",
-      main = "Histogram for Restaurant.and.hotels.Expenditure", 
-      xlab = "Restaurant.and.hotels.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,10])
-qplot(var_train_num_NORM[1:7000,10],
-      geom="histogram",
-      main = "Histogram for Alcoholic.Beverages.Expenditure", 
-      xlab = "Alcoholic.Beverages.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,11])
-qplot(var_train_num_NORM[1:7000,11],
-      geom="histogram",
-      main = "Histogram for Tobacco.Expenditure", 
-      xlab = "Tobacco.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,12])
-qplot(var_train_num_NORM[1:7000,12],
-      geom="histogram",
-      main = "Histogram for Clothing..Footwear.and.Other.Wear.Expenditure", 
-      xlab = "Clothing..Footwear.and.Other.Wear.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,13])
-qplot(var_train_num_NORM[1:7000,13],
-      geom="histogram",
-      main = "Histogram for Housing.and.water.Expenditure", 
-      xlab = "Housing.and.water.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,14])
-qplot(var_train_num_NORM[1:7000,14],
-      geom="histogram",
-      main = "Histogram for Imputed.House.Rental.Value", 
-      xlab = "Imputed.House.Rental.Value",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,15])
-qplot(var_train_num_NORM[1:7000,15],
-      geom="histogram",
-      main = "Histogram for Medical.Care.Expenditure", 
-      xlab = "Medical.Care.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,16])
-qplot(var_train_num_NORM[1:7000,16],
-      geom="histogram",
-      main = "Histogram for Transportation.Expenditure", 
-      xlab = "Transportation.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,17])
-qplot(var_train_num_NORM[1:7000,17],
-      geom="histogram",
-      main = "Histogram for Communication.Expenditure", 
-      xlab = "Communication.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,18])
-qplot(var_train_num_NORM[1:7000,18],
-      geom="histogram",
-      main = "Histogram for Education.Expenditure", 
-      xlab = "Education.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,19])
-qplot(var_train_num_NORM[1:7000,19],
-      geom="histogram",
-      main = "Histogram for Miscellaneous.Goods.and.Services.Expenditure", 
-      xlab = "Miscellaneous.Goods.and.Services.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,20])
-qplot(var_train_num_NORM[1:7000,20],
-      geom="histogram",
-      main = "Histogram for Special.Occasions.Expenditure", 
-      xlab = "Special.Occasions.Expenditure",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,21])
-qplot(var_train_num_NORM[1:7000,21],
-      geom="histogram",
-      main = "Histogram for Crop.Farming.and.Gardening.expenses", 
-      xlab = "Crop.Farming.and.Gardening.expenses",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,22])
-qplot(var_train_num_NORM[1:7000,22],
-      geom="histogram",
-      main = "Histogram for Total.Income.from.Entrepreneurial.Acitivites", 
-      xlab = "Total.Income.from.Entrepreneurial.Acitivites",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-	  
-summary(var_train_num_NORM[1:7000,23])
-qplot(var_train_num_NORM[1:7000,23],
-      geom="histogram",
-      main = "Histogram for Household.Head.Age", 
-      xlab = "Household.Head.Age",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,24])
-qplot(var_train_num_NORM[1:7000,24],
-      geom="histogram",
-      main = "Histogram for Total.Number.of.Family.members", 
-      xlab = "Total.Number.of.Family.members",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-	  
-summary(var_train_num_NORM[1:7000,25])
-qplot(var_train_num_NORM[1:7000,25],
-      geom="histogram",
-      main = "Histogram for Total.number.of.family.members.employed", 
-      xlab = "Total.number.of.family.members.employed",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,26])
-qplot(var_train_num_NORM[1:7000,26],
-      geom="histogram",
-      main = "Histogram for House.Floor.Area", 
-      xlab = "House.Floor.Area",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,27])
-qplot(var_train_num_NORM[1:7000,27],
-      geom="histogram",
-      main = "Histogram for House.Age", 
-      xlab = "House.Age",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,28])
-qplot(var_train_num_NORM[1:7000,28],
-      geom="histogram",
-      main = "Histogram for Number.of.bedrooms", 
-      xlab = "Number.of.bedrooms",  
-      fill=I("blue"), 
-      col=I("red"))
-
-
-summary(var_train_num_NORM[1:7000,29])
-qplot(var_train_num_NORM[1:7000,29],
-      geom="histogram",
-      main = "Histogram for Number.of.Television", 
-      xlab = "Number.of.Television",  
-      fill=I("blue"), 
-      col=I("red"))
-
-
-summary(var_train_num_NORM[1:7000,30])
-qplot(var_train_num_NORM[1:7000,30],
-      geom="histogram",
-      main = "Histogram for Number.of.CD.VCD.DVD", 
-      xlab = "Number.of.CD.VCD.DVD",  
-      fill=I("blue"), 
-      col=I("red"))
-	  
-summary(var_train_num_NORM[1:7000,31])
-qplot(var_train_num_NORM[1:7000,31],
-      geom="histogram",
-      main = "Histogram for Number.of.Component.Stereo.set", 
-      xlab = "Number.of.Component.Stereo.set",  
-      fill=I("blue"), 
-      col=I("red"))
-
-
-summary(var_train_num_NORM[1:7000,32])
-qplot(var_train_num_NORM[1:7000,32],
-      geom="histogram",
-      main = "Histogram for Number.of.Refrigerator.Freezer", 
-      xlab = "Number.of.Refrigerator.Freezer",  
-      fill=I("blue"), 
-      col=I("red")) 
-
-
-summary(var_train_num_NORM[1:7000,33])
-qplot(var_train_num_NORM[1:7000,33],
-      geom="histogram",
-      main = "Histogram for Number.of.Washing.Machine", 
-      xlab = "Number.of.Washing.Machine",  
-      fill=I("blue"), 
-      col=I("red"))
-
-
-summary(var_train_num_NORM[1:7000,34])
-qplot(var_train_num_NORM[1:7000,34],
-      geom="histogram",
-      main = "Histogram for Number.of.Airconditioner", 
-      xlab = "Number.of.Airconditioner",  
-      fill=I("blue"), 
-      col=I("red"))
-
-
-summary(var_train_num_NORM[1:7000,35])
-qplot(var_train_num_NORM[1:7000,35],
-      geom="histogram",
-      main = "Histogram for Number.of.Car..Jeep..Van", 
-      xlab = "Number.of.Car..Jeep..Van",  
-      fill=I("blue"), 
-      col=I("red")) 
-
-
-summary(var_train_num_NORM[1:7000,36])
-qplot(var_train_num_NORM[1:7000,36],
-      geom="histogram",
-      main = "Histogram for Number.of.Landline.wireless.telephones", 
-      xlab = "Number.of.Landline.wireless.telephones",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,37])
-qplot(var_train_num_NORM[1:7000,37],
-      geom="histogram",
-      main = "Histogram for Number.of.Cellular.phone", 
-      xlab = "Number.of.Cellular.phone",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,38])
-qplot(var_train_num_NORM[1:7000,38],
-      geom="histogram",
-      main = "Histogram for Number.of.Personal.Computer", 
-      xlab = "Number.of.Personal.Computer",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,39])
-qplot(var_train_num_NORM[1:7000,39],
-      geom="histogram",
-      main = "Histogram for Number.of.Stove.with.Oven.Gas.Range", 
-      xlab = "Number.of.Stove.with.Oven.Gas.Range",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,40])
-qplot(var_train_num_NORM[1:7000,40],
-      geom="histogram",
-      main = "Histogram for Number.of.Motorized.Banca", 
-      xlab = "Number.of.Motorized.Banca",  
-      fill=I("blue"), 
-      col=I("red"))
-
-summary(var_train_num_NORM[1:7000,41])
-qplot(var_train_num_NORM[1:7000,41],
-      geom="histogram",
-      main = "Histogram for Number.of.Motorcycle.Tricycle", 
-      xlab = "Number.of.Motorcycle.Tricycle",  
-      fill=I("blue"), 
-      col=I("red"))
-
-
-
-```
 
 La normalización produce que algunas variables muestren una distribución normal, o casi normal. Sin embargo, muchas de ellas siguen sin adquirir dicha distribución. A continuación, se procede a aplicar otra transformación distinta a las variables: el logaritmo decimal.
 
@@ -1363,7 +1466,7 @@ qplot(Log_sin_inf[1:7000,41],
 
 ```
 
-Con esta transformación, se consiguen resultados mejores con respecto a la normalización. Muchas variables adquieren distribuciones normales o casi normales, lo que permitirá poder utilizarlas en el diseño del modelo. Sin embargo, hay otras que supondrían un problema, pues tienen distribuciones muy asimétricas.
+Con esta transformación, se consiguen buenos resultados en general. Muchas variables adquieren distribuciones normales o casi normales, lo que permitirá poder utilizarlas en el diseño del modelo. Sin embargo, hay otras que supondrían un problema, pues tienen distribuciones muy asimétricas.
 
 Algunas variables presentan un porcentaje muy alto de valores iguales a 0, lo que produce un polo en el extremo izquierdo de la distribución. Esto es debido a que la población filipina cuenta con un gran número de familias que viven en condiciones extremas de pobreza (aunque desde 2018, su situación económica está mejorando considerablemente).
 
@@ -1475,7 +1578,8 @@ View(Variables_ordenadas)
 
 # Se realiza la regresión lineal múltiple con las variables cuyo valor de correlación cruzada es superior a 0.5
 
-RLM<-lm(Total.Household.Income~Transportation.Expenditure
+RLM<-lm(Total.Household.Income~Housing.and.water.Expenditure
+          +Transportation.Expenditure
           +Clothing..Footwear.and.Other.Wear.Expenditure
           +Fruit.Expenditure
           ,data=new_var_train_log)
@@ -1520,7 +1624,11 @@ qqline(residuos)
 
 # Del conjunto de test, se seleccionan las variables adecuadas
 
-pre_datos_testing<-datos_testing%>%select(Transportation.Expenditure
+pre_datos_testing <- datos_testing %>% filter(Total.Household.Income < 400000)
+
+
+pre_datos_testing <- pre_datos_testing%>%select(Housing.and.water.Expenditure,
+                                                Transportation.Expenditure
           ,Clothing..Footwear.and.Other.Wear.Expenditure
         ,Fruit.Expenditure)
 
@@ -1542,7 +1650,7 @@ ic <- predict(RLM,pre_datos_testing)
 
 # Se obtienen, en un vector, los valores reales para compararlos con los predichos. Para ello, se calculan sus residuos
 
-Valores_reales<-log(datos_testing$Total.Household.Income)
+Valores_reales<-log(pre_datos_testing$Total.Household.Income)
 
 Valores_predichos<-ic
 
