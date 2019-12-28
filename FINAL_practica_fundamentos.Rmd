@@ -84,7 +84,8 @@ A continuación, se realizará un resumen de los estadísticos principales de la
 ```{r}
 # ----- Carga de datos -----
 
-datos<-read.csv('Family Income and Expenditure.csv',stringsAsFactors = TRUE)
+datos<-read.csv('Family_Income_and_Expenditure.csv',stringsAsFactors = TRUE)
+datos$Electricity<-as.factor(datos$Electricity)
 datos_occupation <- datos
 
 ```
@@ -94,7 +95,7 @@ datos_occupation <- datos
 
 kable(summary(datos)) %>%
   kable_styling() %>%
-  scroll_box(width = "500px", height = "200px")
+  scroll_box(width = "100%", height = "100%")
 
 ```
 
@@ -279,20 +280,7 @@ Para clarificar, será categorizada con valores de "Si" y "No", que sustituirán
 ```{r}
 
 # Sustitución de 0/1 por No/Si
-
-datos$Electricity[which(datos$Electricity=='0')] <- 'No'
-datos$Electricity[which(datos$Electricity=='1')] <- 'Si'
-
-
-# Transformación de la variable Electricity a categórica, por ser binaria (0 o 1 / No o Si)
-
-
-datos$Electricity<-as.factor(datos$Electricity)
-
-datos$Electricity = 
-  factor(datos$Electricity,ordered=TRUE,levels=
-           (c('No','Si')))
-
+datos$Electricity<-fct_recode(datos$Electricity,Si='1',No='0')
 ```
 
 El último grupo de variables, corresponde al número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus rangos son muy reducidos con respecto a las demás numéricas. Se inspecciona más a fondo estas variables viendo la media por familia filipina de los diferentes bienes.
@@ -680,7 +668,7 @@ summary(var_train_num$Household.Head.Age)
 summary(var_train_num$Total.Number.of.Family.members)
 
 
-grid.arrange()
+#grid.arrange() COMENTO PARA QUE SE GENER EL HTML
 
 plot(var_train_num$Miscellaneous.Goods.and.Services.Expenditure)
 
@@ -1118,7 +1106,7 @@ La normalización produce que algunas variables muestren una distribución norma
 
 # Transformación logarítmica, que produce que los valores iguales a 0 se transformen a -Inf (por la definición del logaritmo)
 
-var_train_num_Log<- log(var_train_num)
+var_train_num_Log<- log10(var_train_num)
 
 # Se imputan los valores -Infinito a valor 0, para no entorpecer la visualización y el procesado
 
@@ -1487,12 +1475,13 @@ Por lo tanto, y a la vista del apartado anterior, se partirá del conjunto de va
 ```{r}
 
 # ----- Descarte de variables que no tienen distribuciones normales/simétricas -----
-
+#-Imputed.House.Rental.Value, 
+#-Restaurant.and.hotels.Expenditure,
 Log_reduced <- Log_sin_inf%>%select(
--Restaurant.and.hotels.Expenditure,
+-Imputed.House.Rental.Value, 
 -Alcoholic.Beverages.Expenditure,    
 -Tobacco.Expenditure,                          
--Imputed.House.Rental.Value,                 
+-Restaurant.and.hotels.Expenditure,     
 -Medical.Care.Expenditure,                     
 -Communication.Expenditure,                   
 -Education.Expenditure,                        
@@ -1562,7 +1551,7 @@ ggcorrplot(t(cor_mat_log), method = "circle") # Representación gráfica del map
 
 
 
-# Se escogerán las que tengan una correlación > de 0.5 con respecto al "Total.Household.Income"
+# Se escogerán las que tengan una correlación > de 0.4 con respecto al "Total.Household.Income"
 
 Variables_ordenadas<-data.frame(t(cor_mat_log)[,'Total.Household.Income']) # Es para quedarse con la columna ordenada
 colnames(Variables_ordenadas)<-'Coef. Corr'
@@ -1576,46 +1565,65 @@ View(Variables_ordenadas)
 
 ```{r}
 
-# Se realiza la regresión lineal múltiple con las variables cuyo valor de correlación cruzada es superior a 0.5
-
+# Se realiza la regresión lineal múltiple con las variables cuyo valor de correlación con el Income es superior a 0.4
 RLM<-lm(Total.Household.Income~Housing.and.water.Expenditure
           +Transportation.Expenditure
           +Clothing..Footwear.and.Other.Wear.Expenditure
           +Fruit.Expenditure
           ,data=new_var_train_log)
 
-
 # Cálculo de residuos del modelo
 
-residuos <- rstandard(RLM)
+residuos <-(residuals(RLM))
 
+# Calculo de los valores ajustados con las observaciones de entrenamiento
 
-# Ajuste de valores de residuos - comprobación de normalidad
-
-valores.ajustados <- fitted(RLM)
+valores.ajustados <- (fitted(RLM))
 
 # Verificación de la no relación lineal entre valores predichos y  residuos
 
-plot(valores.ajustados, residuos)
+plot(valores.ajustados, residuos,col="black")
 
 # Valores de los betas estimados en la regresión lineal múltiple
 
 summary(RLM)
 
 ```
+Los resultados que obtenemos son parcialmente buenos:
 
+* El grádico de dispersión no es todo lo bueno que quisieramos, la forma de este gráfico nos informa que para cada valor predicho la varianza no es constante. Este gráfico también nos podría estar informando que el modelo de regresión lineal no es quizá el más adecuado para las variables que hemos seleccionado.
 
-Para comprobar que el resultado es correcto, se observa en la siguiente gráfica si los residuos siguen una distribución normal. Para ello, se representa el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta, mejor.
+* Tenemos un R-squared de 0.6747 lo cual nos indica que con las variables elegidas estamos explicando casi el 70% de la varianza del Income (nuestra variable a predecir). 
 
+* Las estimaciones de los betas tienen asociados un p-valor más pequeño que un nivel de significancia de 0.05 lo cual nos indica que es muy poco probable los betas estimados sean nulos. 
+
+* El p-valor asociado al F-statistic es muy pequeño menor que el nivel de significancia 0.05 lo cual nos indica que el modelo es estadísticamente significativo y que nuestras variables elegidas explican algo de la variable a predecir
+
+Para comprobar que el resultado es correcto, se observa en la próxima gráfica si los residuos siguen una distribución normal. Para ello, se representa el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta, mejor. Además, se realiza un test de normalidad con las siguientes hipótesis:
+
+* H0: los datos proceden de una distribución normal
+
+* H1: los datos no proceden de una distribución normal
 
 ```{r}
 
 qqnorm(residuos)
 
 qqline(residuos)
-
-
+ks.test(residuos,pnorm,mean=mean(residuos),sd=sd(residuos))
+residuos<-as.data.frame(residuos)
+ggplot(residuos, aes(x=residuos)) + 
+ geom_histogram(color='blue',fill='orange',aes(y=..density..), alpha=0.5, 
+                position="identity")+
+ geom_density(color='red',alpha=.2) 
+residuos%>%summarise(media=mean(residuos),
+                            max=max(residuos),
+                            min=min(residuos),
+                            sd=sd(residuos),
+                            var=var(residuos))
 ```
+
+Si observamos el histograma y el gráfico Q-Q parece que nuestros residuos siguen una distribución normal. sin embargo, en nuestro test de normalidad obtenemos un p-valor muy pequeño cercano al nivel de significancia alpha = 0.05.
 
 # Validación del modelo
 
@@ -1624,10 +1632,10 @@ qqline(residuos)
 
 # Del conjunto de test, se seleccionan las variables adecuadas
 
-pre_datos_testing <- datos_testing %>% filter(Total.Household.Income < 400000)
+pre_datos_testing_original <- datos_testing %>% filter(Total.Household.Income < 400000)
 
 
-pre_datos_testing <- pre_datos_testing%>%select(Housing.and.water.Expenditure,
+pre_datos_testing <- pre_datos_testing_original%>%select(Housing.and.water.Expenditure,
                                                 Transportation.Expenditure
           ,Clothing..Footwear.and.Other.Wear.Expenditure
         ,Fruit.Expenditure)
@@ -1635,7 +1643,7 @@ pre_datos_testing <- pre_datos_testing%>%select(Housing.and.water.Expenditure,
 
 # Es necesario transformar logarítmicamente el conjunto de test antes de usarlo para validar, pues el conjunto de train estaba transformado logarítmicamente
 
-pre_datos_testing<-log(pre_datos_testing)
+pre_datos_testing<-log10(pre_datos_testing)
 
 
 # Quitamos los valores -Inf transformandolos a 0
@@ -1645,38 +1653,107 @@ pre_datos_testing <- replace(pre_datos_testing,pre_datos_testing=="-Inf",0)
 
 # Predicción con el modelo de RLM calculado
 
-ic <- predict(RLM,pre_datos_testing)
+predichos_log <- predict(RLM,pre_datos_testing)
 
+# Calculo de los residuos en el dominio transformado (log10)
+valores_reales_log<-log10(pre_datos_testing_original$Total.Household.Income)
+residuos_log<-valores_reales_log  -predichos_log
+```
+
+```{r}
+# Es conveniente representar los residuos frente a los valores predichos en el dominio transformado (log10)
+plot(predichos_log,residuos_log)
+```
+
+Vemos que el gráfico no varía mucho con respecto al mismo gráfico representado anteriormente utilizando el conjunto de training.
+
+```{r}
+df_comp_log10<-data.frame(predichos_log10=predichos_log,Valores_reales_log=valores_reales_log)
 
 # Se obtienen, en un vector, los valores reales para compararlos con los predichos. Para ello, se calculan sus residuos
 
-Valores_reales<-log(pre_datos_testing$Total.Household.Income)
+Valores_reales<-(pre_datos_testing_original$Total.Household.Income)
 
-Valores_predichos<-ic
-
+Valores_predichos<-10^(predichos)
 
 # Calculamos los residuos
 
 residuos<-Valores_reales-Valores_predichos
 
-
-# Verificación de la no relación lineal entre valores predichos y  residuos
-
-plot(Valores_predichos,residuos)
-
-
 ```
-
-
-Para comprobar que el resultado es correcto, se observa en la siguiente gráfica si los residuos siguen una distribución normal. Para ello, se representa el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta, mejor.
-
 
 ```{r}
-
-qqnorm(residuos)
-
-qqline(residuos)
-
-
+# Representamos en un gráfico de dispersión los valores predichos por el modelo con los residuos en unidades normales (deshaciendo el logaritmo)
+plot(Valores_predichos,residuos)
 ```
 
+```{r}
+#Comprobamos los valores predichos y originales en los dos dataFrames siguientes:
+df_com_original<-data.frame(predichos=Valores_predichos,reales=Valores_reales,residuos=residuos)
+
+#Transformados
+df_comp_log10
+#Originales
+df_com_original
+
+#Queremos ver cuanto nos equivocamos viendo los residuos
+df_com_original%>%summarise(media=mean(residuos),
+                            max=max(residuos),
+                            min=min(residuos),
+                            sd=sd(residuos),
+                            var=var(residuos))
+```
+
+Teniendo en cuenta que los valores de Income (predichos y reales) están en moneda filipina, y que la equivalencia a euros es: 1 peso filipino --> 0.018 euros. Si observamos el valor máximo y mínimo del valor absoluto de los residuos veremos que nuestro modelo llega a equivocarse en un máximo de 313226.72 que son: `r 313226.72 * 0.018` euros.
+
+
+Para comprobar la normalidad de los residuos. Se utiliza el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta, mejor.
+
+Llegados hasta este punto nos pareció interesante mostrar el gráfico Q-Q, histograma y test de normalidad para los resudios en unidades normales y en unidades logaritmicas obtenidos en la predicción
+
+```{r}
+# Unidades logarítmicas
+qqnorm(residuos_log)
+qqline(residuos_log)
+ks.test(residuos_log,pnorm,mean=mean(residuos_log),sd=sd(residuos_log))
+residuos_log<-as.data.frame(residuos_log)
+ggplot(residuos_log, aes(x=residuos_log)) + 
+ geom_histogram(color='blue',fill='orange',aes(y=..density..), alpha=0.5, 
+                position="identity")+
+ geom_density(color='red',alpha=.2) 
+residuos_log%>%summarise(media=mean(residuos_log),
+                            max=max(residuos_log),
+                            min=min(residuos_log),
+                            sd=sd(residuos_log),
+                            var=var(residuos_log))
+```
+
+```{r}
+# Unidades normales
+qqnorm(residuos)
+qqline(residuos)
+ks.test(residuos,pnorm,mean=mean(residuos),sd=sd(residuos))
+residuos<-as.data.frame(residuos)
+ggplot(residuos, aes(x=residuos)) + 
+ geom_histogram(color='blue',fill='orange',aes(y=..density..), alpha=0.5, 
+                position="identity")+
+ geom_density(color='red',alpha=.2) 
+residuos%>%summarise(media=mean(residuos),
+                            max=max(residuos),
+                            min=min(residuos),
+                            sd=sd(residuos),
+                            var=var(residuos))
+```
+
+## Conclusiones
+
+A lo largo del análisis, hemos descubierto cosas interesantes que nos han ayudado a definir un modelo de regresión lineal adecuado a nuestros datos:
+
+* La población filipina es una *población generalmente pobre*. Eso conlleva a encontrarnos con muchos valores atípicos y problemas para definir un modelo integrando todos los elementos de nuestro data set
+
+* Existen *dos o más comportmientos diferentes* dentro de un mismo data set. Esto significa, que para desarrollar un modelo lógico que prediga el income de una familia filipina, deberemos de diferenciar entre la familia filipina común (equivalente al 85% y mayoritariamente pobre) y la familia filipina de clase alta (aquella que genera valores atípicos y no es representativo)
+
+* Al analizar a una población con tanto nivel de pobreza, debemos de entender que hay variables predictoras del income que en valores normales si tendrían sentido, pero en este tipo de datos no. Por ejemplo, variables como los gastos en ropa, comunicación, bienes de lujo cuentan con un alto porcentaje de 0. Trabajar con 0 no es el problema, sino entender que para este tipo de poblaciones, las cuales no gastan practicamente nada, existen otras variables mejores para predecir el income
+
+
+La población filipina debe de tratarse como una población pobre, con variables predictoras del income algo diferentes a otro tipo de población con valores de income más repartido entre clases (que exista clase baja, media-baja, media, media alta y alta)
