@@ -130,20 +130,31 @@ Además, se categorizarán ciertas variables, seleccionando las posibles categor
 
 # -----Corrección de valores en variables y categorización -----
 
-levels(datos$Main.Source.of.Income)
-summary(datos$Main.Source.of.Income)
+
+kable(summary(datos$Main.Source.of.Income)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")summary(datos$Main.Source.of.Income)
+
 datos$Main.Source.of.Income = factor(datos$Main.Source.of.Income,ordered=TRUE,levels=(c('Other sources of Income'
                                                                             , 'Enterpreneurial Activities'
                                                                             , 'Wage/Salaries')))
-levels(datos$Main.Source.of.Income)
+kable(levels(datos$Main.Source.of.Income)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 #--------------------------------------------------
 
-levels(datos$Household.Head.Marital.Status)
-summary(datos$Household.Head.Marital.Status)
+
+kable(summary(datos$Household.Head.Marital.Status)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 datos$Household.Head.Marital.Status[which(datos$Household.Head.Marital.Status=='Unknown')] <-NA # Se etiqueta como NA el valor "Unknown" (desconocido)
 datos$Household.Head.Marital.Status<-fct_drop(datos$Household.Head.Marital.Status)
-levels(datos$Household.Head.Marital.Status)
+
+kable(levels(datos$Household.Head.Marital.Status)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 datos$Household.Head.Marital.Status = 
   factor(datos$Household.Head.Marital.Status,ordered=TRUE,levels=
            (c('Single'
@@ -151,12 +162,18 @@ datos$Household.Head.Marital.Status =
               ,'Annulled'
               ,'Divorced/Separated'
               ,'Married')))
-levels(datos$Household.Head.Marital.Status)
+
+kable(levels(datos$Household.Head.Marital.Status)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-levels(datos$Household.Head.Class.of.Worker)
-summary(datos$Household.Head.Class.of.Worker)
+
+kable(summary(datos$Household.Head.Class.of.Worker)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 datos$Household.Head.Class.of.Worker = 
   factor(datos$Household.Head.Class.of.Worker,ordered=TRUE,levels=
            (c('Worked without pay in own family-operated farm or business'
@@ -166,21 +183,23 @@ datos$Household.Head.Class.of.Worker =
               ,'Worked for private household'
               ,'Worked for private establishment'
               ,'Worked for government/government corporation')))
-levels(datos$Household.Head.Class.of.Worker)
+
+kable(levels(datos$Household.Head.Class.of.Worker)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-levels(datos$Type.of.Household)
 datos$Type.of.Household = 
   factor(datos$Type.of.Household,ordered=TRUE,levels=
            (c('Single Family'
               ,'Two or More Nonrelated Persons/Members'
               ,'Extended Family')))
-levels(datos$Type.of.Household)
-
+kable(levels(datos$Type.of.Household)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-levels(datos$Type.of.Building.House)
 datos$Type.of.Building.House = 
   factor(datos$Type.of.Building.House,ordered=TRUE,levels=
            (c('Other building unit (e.g. cave, boat)'
@@ -189,16 +208,19 @@ datos$Type.of.Building.House =
               ,'Single house'
               ,'Duplex'
               ,'Multi-unit residential')))
-levels(datos$Type.of.Building.House)
+kable(levels(datos$Type.of.Building.House)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-levels(datos$Type.of.Roof)
-summary(datos$Type.of.Roof)
+kable(summary(datos$Type.of.Roof)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 datos$Type.of.Roof[which(datos$Type.of.Roof=='Not Applicable')] <-NA # Se etiqueta como NA el valor "Not Applicable" (no aplicable)
 datos$Type.of.Roof<-fct_drop(datos$Type.of.Roof)
-levels(datos$Type.of.Roof)
-summary(datos$Type.of.Roof)
+
 datos$Type.of.Roof = 
   factor(datos$Type.of.Roof,ordered=TRUE,levels=
            (c('Salvaged/makeshift materials'
@@ -207,12 +229,18 @@ datos$Type.of.Roof =
               ,'Mixed but predominantly light materials'
               ,'Mixed but predominantly strong materials'
               ,'Strong material(galvanized,iron,al,tile,concrete,brick,stone,asbestos)')))
-levels(datos$Type.of.Roof)
+
+kable(levels(datos$Type.of.Roof)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-levels(datos$Type.of.Walls)
-summary(datos$Type.of.Walls)
+
+kable(summary(datos$Type.of.Walls)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 datos$Type.of.Walls[which(datos$Type.of.Walls=='Not applicable')] <-NA # Se etiqueta como NA el valor "Not Applicable" (no aplicable)
 datos$Type.of.Walls<-fct_drop(datos$Type.of.Walls)
 levels(datos$Type.of.Walls)
@@ -224,10 +252,16 @@ datos$Type.of.Walls=
               ,'Light'
               ,'Strong'
               ,'Quite Strong')))
-levels(datos$Type.of.Walls)
+
+kable(levels(datos$Type.of.Walls)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Toilet.Facilities)
-summary(datos$Toilet.Facilities)
+
+kable(summary(datos$Toilet.Facilities)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 datos$Toilet.Facilities= 
   factor(datos$Toilet.Facilities,ordered=TRUE,levels=
            (c('None'
@@ -238,11 +272,19 @@ datos$Toilet.Facilities=
               ,'Water-sealed, other depository, used exclusively by household'
               ,'Water-sealed, sewer septic tank, shared with other household'
               ,'Water-sealed, sewer septic tank, used exclusively by household')))
-levels(datos$Toilet.Facilities)
+
+kable(levels(datos$Toilet.Facilities)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Household.Head.Occupation)
+kable(levels(datos$Household.Head.Occupation)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Main.Source.of.Water.Supply)
+kable(summary(datos$Main.Source.of.Water.Supply)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 datos$Main.Source.of.Water.Supply= 
   factor(datos$Main.Source.of.Water.Supply,ordered=TRUE,levels=
            (c('Others'
@@ -256,18 +298,33 @@ datos$Main.Source.of.Water.Supply=
               ,'Peddler'
               ,'Shared, faucet, community water system'
               ,'Own use, faucet, community water system')))
-levels(datos$Main.Source.of.Water.Supply)
+
+kable(levels(datos$Main.Source.of.Water.Supply)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-levels(datos$Tenure.Status)
+kable(summary(datos$Tenure.Status)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 datos$Tenure.Status[which(datos$Tenure.Status=='Not Applicable')] <-NA # Se etiqueta como NA el valor "Not Applicable" (no aplicable)
 datos$Tenure.Status<-fct_drop(datos$Tenure.Status)
-levels(datos$Tenure.Status)
-summary(datos$Tenure.Status)
+
+kable(levels(datos$Tenure.Status)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-levels(datos$Electricity) 
-summary(datos$Electricity)
+kable(levels(datos$Electricity)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(datos$Electricity)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 ggplot(datos, aes(x=Number.of.Airconditioner,fill= Electricity)) + geom_bar(position = "dodge")
 
 ```
@@ -287,47 +344,75 @@ El último grupo de variables, corresponde al número de bienes adquiridos. Dich
 
 ```{r}
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.bedrooms)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.bedrooms)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Refrigerator.Freezer)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Refrigerator.Freezer)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Washing.Machine)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Washing.Machine)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(Number.of.Airconditioner)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Airconditioner)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Car..Jeep..Van)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Car..Jeep..Van)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.CD.VCD.DVD)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.CD.VCD.DVD)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Cellular.phone)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Cellular.phone)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Component.Stereo.set)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Component.Stereo.set)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Landline.wireless.telephones)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Landline.wireless.telephones)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Personal.Computer)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Personal.Computer)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Motorcycle.Tricycle)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Motorcycle.Tricycle)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Stove.with.Oven.Gas.Range)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Stove.with.Oven.Gas.Range)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Television)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Television)
 #---------------------------------------------------------------------------------------------------------------------------------------------
+kable(summary(datos$Number.of.Motorized.Banca)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(datos$Number.of.Motorized.Banca)
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
 ```
@@ -466,13 +551,29 @@ Se dispone a ver la distribución y densidad de cada una de las variables cuanti
 # ----- Histograma de las variables cuantitativas sin transformar -----
 
 # Primeras 6 variables
+kable(summary(var_train_num$Total.Household.Income)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(var_train_num$Total.Household.Income)
-summary(var_train_num$Total.Food.Expenditure)
-summary(var_train_num$Bread.and.Cereals.Expenditure)
-summary(var_train_num$Total.Rice.Expenditure)
-summary(var_train_num$Meat.Expenditure)
-summary(var_train_num$Total.Fish.and..marine.products.Expenditure)
+kable(summary(var_train_num$Total.Food.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Bread.and.Cereals.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Total.Rice.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Meat.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Total.Fish.and..marine.products.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 
 layout(matrix(c(1:6), nrow=2, byrow=FALSE))
@@ -531,12 +632,30 @@ qplot(var_train_num$Total.Fish.and..marine.products.Expenditure,
 
 # Siguientes 6 variables
 
-summary(var_train_num$Fruit.Expenditure)
-summary(var_train_num$Vegetables.Expenditure)
-summary(var_train_num$Restaurant.and.hotels.Expenditure)
-summary(var_train_num$Alcoholic.Beverages.Expenditure)
-summary(var_train_num$Tobacco.Expenditure)
-summary(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure)
+kable(summary(var_train_num$Fruit.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Vegetables.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Restaurant.and.hotels.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Alcoholic.Beverages.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Tobacco.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 
 
 layout(matrix(c(1:6), nrow=2, byrow=FALSE))
@@ -595,13 +714,30 @@ qplot(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure,
 
 # Siguientes 6 variables
 
+kable(summary(var_train_num$Housing.and.water.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
-summary(var_train_num$Housing.and.water.Expenditure)
-summary(var_train_num$Imputed.House.Rental.Value)
-summary(var_train_num$Medical.Care.Expenditure)
-summary(var_train_num$Transportation.Expenditure)
-summary(var_train_num$Communication.Expenditure)
-summary(var_train_num$Education.Expenditure)
+kable(summary(var_train_num$Imputed.House.Rental.Value)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Medical.Care.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Transportation.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Communication.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+kable(summary(var_train_num$Education.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
 
 layout(matrix(c(1:6), nrow=2, byrow=FALSE))
 layout.show(6)
@@ -660,12 +796,35 @@ qplot(var_train_num$Education.Expenditure,
 
 # Siguientes 6 variables
 
-summary(var_train_num$Miscellaneous.Goods.and.Services.Expenditure)
-summary(var_train_num$Special.Occasions.Expenditure)
-summary(var_train_num$Crop.Farming.and.Gardening.expenses)
-summary(var_train_num$Total.Income.from.Entrepreneurial.Acitivites)
-summary(var_train_num$Household.Head.Age)
-summary(var_train_num$Total.Number.of.Family.members)
+
+kable(summary(var_train_num$Miscellaneous.Goods.and.Services.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+
+kable(summary(var_train_num$Special.Occasions.Expenditure)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+
+kable(summary(var_train_num$Crop.Farming.and.Gardening.expenses)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+
+kable(summary(var_train_num$Total.Income.from.Entrepreneurial.Acitivites)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+
+kable(summary(var_train_num$Household.Head.Age)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
+
+
+kable(summary(var_train_num$Total.Number.of.Family.members)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 
 #grid.arrange() COMENTO PARA QUE SE GENER EL HTML
@@ -908,7 +1067,9 @@ grupo2 <- grupo2y3 %>%
 grupo3 <- grupo2y3 %>%
   filter(Total.Household.Income >= 1000000)
 
-summary(datos_training$Total.Household.Income)
+kable(summary(datos_training$Total.Household.Income)) %>%
+  kable_styling() %>%
+  scroll_box(width = "100%", height = "100%")
 
 boxplot(datos_training$Total.Household.Income,
         border = c("red"))
