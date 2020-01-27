@@ -132,6 +132,10 @@ Además, se categorizarán ciertas variables, seleccionando las posibles categor
 
 ### Corrección de valores en variables y categorización
 
+La función summary nos da un resumen rápido de cada variable de nuestro data set. De esta forma, podremos inspeccionar rápidamente infomación como la proporción de cada tipo de categorías dentro de las variables categóricass o estadísticos básicos como la media, los mínimos y los máximos de las variables numéricas.
+
+Este primer paso inicial no busca un análisis exahustivo de los datos, sino más bien un contacto inicial, que nos hagan ver anomalías a primera vista. Por eso, no nos pararemos demasiado en ellos salvo que veamos algo interesante a comentar.
+
 
 ```{r warning=FALSE}
 
@@ -425,7 +429,7 @@ var_train_num <- datos_training%>%select_if(is.numeric)
 
 ### 4.2. Análisis variables cualitativas
 
-Para estudiar más a fondo las variables cualitativas, es conveniente ver sus frecuencias absolutas, una a una, con ayuda de la función `table()`
+Para estudiar más a fondo las variables cualitativas, es conveniente ver sus frecuencias absolutas, una a una, con ayuda de la función `table()`. Sacar la frecuencia absoluta de cada variable cualitativa es importante para obtener información de como de homogénea es nuestra población (e.g tipo de trabajo, sexo o tipo de casas más comunes). Además al tener variables muy específicas sobre la estructura de la casa y bienes básicos del hogar, podremos ver fácilmente si la mayoría de nuestra población dispone de una calidad de vida digna, o por el contrario, tiende a estar en niveles de pobreza alarmantes (e.g tener electricidad y no tener)
 
 
 Region:
@@ -739,9 +743,13 @@ ftable(var_train_cat$Region, var_train_cat$Household.Head.Sex, var_train_cat$Ele
 
 ```
 
-Finalmente, se muestra una serie de visualizaciones de los datos mediante diagramas de barras:
 
-# Gráficos EDA con variables cualitativas individuales
+### Gráficos EDA con variables cualitativas individuales
+
+Tras haber hecho un análisis inicial de cada variable de nuestro data set, es hora de visualizar algunos de los datos que más atención nos ha llamado. De los que hemos seleccionado, creemos que los `ingresos`, la `región` y el `tipo de trabajo` son puntos clave para modelar mejor la forma que toma esta población. 
+
+Más adelante, cuando visualicemos algunos de los datos de nuestras variables combinados y plantearnos algunas preguntas de interés, podremos sacar algunas conclusiones sobre las características más relevantes de nuestra población filipina (véase apartado 4.4 Representación datos cualitativos y cuantitativos)
+
 
 ```{r warning=FALSE}
 
@@ -751,8 +759,6 @@ ggplot(datos, aes(Region)) + geom_bar() + ggtitle("Núm. familias. por Región")
 ggplot(datos, aes(Main.Source.of.Income)) + geom_bar() + ggtitle("Núm. familias. por fuente de ingresos")
 
 ```
-
-# Visualización de datos cualitativos
 
 ```{r warning=FALSE}
 
@@ -1166,7 +1172,7 @@ Como parte final del análisis exploratorio de datos, se muestran algunas visual
 
 Para esta sección, han sido planteadas una serie de preguntas interesantes que pueden ser respondidas a través de visualizaciones:
 
-*¿Qué porcentaje de la población tiene unos ingresos inferiores a 400000$ anuales* 
+**¿Qué porcentaje de la población tiene unos ingresos inferiores a 400000$ anuales** 
 
 La mayoría ronda por debajo de los 400000 pesos filipinos por familia al año (en torno al 85%). A continuación, se realiza una subdivisión del conjunto de datos en 3 subconjuntos: familias con ingresos inferiores a 400000 pesos filipinos, familias con ingresos entre 400000 y 1100000 pesos filipinos, y el resto. Mediante diagramas de caja (boxplot) se observa como esta división permite tener 3 grupos de familias en función de sus ingresos sin valores atípicos en los dos primeros, pese a observar mayor dispersión (desigualdad de ingresos) en el grupo más favorecido económicamente.
 
@@ -1206,11 +1212,11 @@ boxplot(grupo3$Total.Household.Income,
 
 ```
 
-* *Cuál es la relación entre el consumo de comida y ropa respecto a los ingresos familiares?* 
+**Cuál es la relación entre el consumo de comida y ropa respecto a los ingresos familiares?** 
 
 Se decide filtrar por regiones y visualizar la cantidad de ingresos por familia a partir del tamaño de las burbujas.
 
-# Bubble plot para ver la relación entre consumo de comida y de ropa respecto a los ingresos (tamaño de la burbuja) dividido por regiones (ciudades)
+## Bubble plot para ver la relación entre consumo de comida y de ropa respecto a los ingresos (tamaño de la burbuja) dividido por regiones (ciudades)
 
 
 ```{r warning=FALSE}
@@ -1225,7 +1231,7 @@ datos_training %>%
 ```
 
 
-* *¿Cuáles son las profesiones más comunes de una familia Filipina?* 
+**¿Cuáles son las profesiones más comunes de una familia Filipina?** 
 
 Como se indicaba al principio de esta sección, la mayoría es una población agraria.
 
@@ -1243,7 +1249,7 @@ by_common_jobs <- datos_occupation %>%
 ggplot(data = by_common_jobs) + geom_bar(mapping = aes(x = Household.Head.Occupation, y = Total), stat = "identity") + labs(title="Trabajos más comunes en familias filipinas") + theme(axis.text.x = element_text(angle = 30, hjust = 1))
 ```
 
-* *¿Cuáles son las regiones de Filipinas con más gastos?* 
+**¿Cuáles son las regiones de Filipinas con más gastos?** 
 
 Los datos tienen un gran número de valores atípicos, por lo que para ver el boxplot es necesario aplicar un logaritmo en base 10. Vemos que las familias de la Región `NAT` son aquellas que más gastos tienen
 
