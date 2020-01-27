@@ -53,6 +53,8 @@ Antes de proceder con la visualización gráfica de las variables (para tener un
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(scipen=999)
+
 ```
 
 
@@ -95,7 +97,7 @@ datos_occupation <- datos
 ```{r warning=FALSE}
 # ----- Resumen numérico de las variables -----
 
-kable(summary(datos)) %>%
+kable(summary(datos),caption="Summary del conjunto de datos") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
@@ -128,34 +130,32 @@ Una vez descartadas aquellas variables, se irán etiquetando como NA todos aquel
 
 Además, se categorizarán ciertas variables, seleccionando las posibles categorías que podrán adquirir.
 
+### Corrección de valores en variables y categorización
+
+
 ```{r warning=FALSE}
 
 # -----Corrección de valores en variables y categorización -----
 
 
-kable(summary(datos$Main.Source.of.Income)) %>%
+kable(summary(datos$Main.Source.of.Income),caption="Summary de Main.Source.of.Income") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 datos$Main.Source.of.Income = factor(datos$Main.Source.of.Income,ordered=TRUE,levels=(c('Other sources of Income'
                                                                             , 'Enterpreneurial Activities'
                                                                             , 'Wage/Salaries')))
-kable(levels(datos$Main.Source.of.Income)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
 
 #--------------------------------------------------
 
 
-kable(summary(datos$Household.Head.Marital.Status)) %>%
+kable(summary(datos$Household.Head.Marital.Status),caption="Summary de Household.Head.Marital.Status") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
+
 datos$Household.Head.Marital.Status[which(datos$Household.Head.Marital.Status=='Unknown')] <-NA # Se etiqueta como NA el valor "Unknown" (desconocido)
 datos$Household.Head.Marital.Status<-fct_drop(datos$Household.Head.Marital.Status)
 
-kable(levels(datos$Household.Head.Marital.Status)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
 
 datos$Household.Head.Marital.Status = 
   factor(datos$Household.Head.Marital.Status,ordered=TRUE,levels=
@@ -165,14 +165,10 @@ datos$Household.Head.Marital.Status =
               ,'Divorced/Separated'
               ,'Married')))
 
-kable(levels(datos$Household.Head.Marital.Status)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
 
-kable(summary(datos$Household.Head.Class.of.Worker)) %>%
+kable(summary(datos$Household.Head.Class.of.Worker),caption="Summary de Household.Head.Class.of.Worker") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
@@ -186,9 +182,7 @@ datos$Household.Head.Class.of.Worker =
               ,'Worked for private establishment'
               ,'Worked for government/government corporation')))
 
-kable(levels(datos$Household.Head.Class.of.Worker)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
+
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -197,7 +191,7 @@ datos$Type.of.Household =
            (c('Single Family'
               ,'Two or More Nonrelated Persons/Members'
               ,'Extended Family')))
-kable(levels(datos$Type.of.Household)) %>%
+kable(levels(datos$Type.of.Household),caption="Summary de Type.of.Household") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 #---------------------------------------------------------------------------------------------------------------------------------------------
@@ -210,13 +204,13 @@ datos$Type.of.Building.House =
               ,'Single house'
               ,'Duplex'
               ,'Multi-unit residential')))
-kable(levels(datos$Type.of.Building.House)) %>%
+kable(levels(datos$Type.of.Building.House),caption="Summary de Type.of.Building.House") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-kable(summary(datos$Type.of.Roof)) %>%
+kable(summary(datos$Type.of.Roof),caption="Summary de Type.of.Roof") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
@@ -232,21 +226,17 @@ datos$Type.of.Roof =
               ,'Mixed but predominantly strong materials'
               ,'Strong material(galvanized,iron,al,tile,concrete,brick,stone,asbestos)')))
 
-kable(levels(datos$Type.of.Roof)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
 
-kable(summary(datos$Type.of.Walls)) %>%
+kable(summary(datos$Type.of.Walls),caption="Summary de Type.of.Walls") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 datos$Type.of.Walls[which(datos$Type.of.Walls=='Not applicable')] <-NA # Se etiqueta como NA el valor "Not Applicable" (no aplicable)
 datos$Type.of.Walls<-fct_drop(datos$Type.of.Walls)
-levels(datos$Type.of.Walls)
-summary(datos$Type.of.Walls)
+
 datos$Type.of.Walls= 
   factor(datos$Type.of.Walls,ordered=TRUE,levels=
            (c('Salvaged'
@@ -255,12 +245,10 @@ datos$Type.of.Walls=
               ,'Strong'
               ,'Quite Strong')))
 
-kable(levels(datos$Type.of.Walls)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
+
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-kable(summary(datos$Toilet.Facilities)) %>%
+kable(summary(datos$Toilet.Facilities),caption="Summary de Toilet.Facilities") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
@@ -275,15 +263,9 @@ datos$Toilet.Facilities=
               ,'Water-sealed, sewer septic tank, shared with other household'
               ,'Water-sealed, sewer septic tank, used exclusively by household')))
 
-kable(levels(datos$Toilet.Facilities)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
+
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(levels(datos$Household.Head.Occupation)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-#---------------------------------------------------------------------------------------------------------------------------------------------
-kable(summary(datos$Main.Source.of.Water.Supply)) %>%
+kable(summary(datos$Main.Source.of.Water.Supply),caption="Summary de Main.Source.of.Water.Supply") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
@@ -301,37 +283,34 @@ datos$Main.Source.of.Water.Supply=
               ,'Shared, faucet, community water system'
               ,'Own use, faucet, community water system')))
 
-kable(levels(datos$Main.Source.of.Water.Supply)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(summary(datos$Tenure.Status)) %>%
+kable(summary(datos$Tenure.Status),caption="Summary de Tenure.Status") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 datos$Tenure.Status[which(datos$Tenure.Status=='Not Applicable')] <-NA # Se etiqueta como NA el valor "Not Applicable" (no aplicable)
 datos$Tenure.Status<-fct_drop(datos$Tenure.Status)
 
-kable(levels(datos$Tenure.Status)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
+```
+
+La  variable "Electricity" es un claro ejemplo de la importancia de no tratar como NA todos aquellos valores iguales a `0`. Puesto que no existe ninguna descripción de las variables del dataset, más allá del propio nombre, se trata de ver a qué se refieren esos `0`. A continuación, se muestra una representación gráfica de la variable:
+
+
+```{r warning=FALSE}
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
 
-kable(levels(datos$Electricity)) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(summary(datos$Electricity)) %>%
+kable(summary(datos$Electricity),caption="Summary de Electricity") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 ggplot(datos, aes(x=Number.of.Airconditioner,fill= Electricity)) + geom_bar(position = "dodge")
 
+
 ```
 
-La  variable "Electricity" es un claro ejemplo de la importancia de no tratar como NA valores iguales a `0`. Puesto que no existe ninguna descripción de las variables del dataset, más allá del propio nombre, se trata de ver a qué se refieren esos `0`. A la vista de la gráfica, se concluye que todos los usuarios que tienen aire acondicionado, tienen un 1 en Electricity, y que ningún usuario con un 0 tiene aire acondicionado, por lo que es posible afirmar que el 1 corresponde a tener electricidad, y el 0 a no tenerla. 
+A la vista de la gráfica, se concluye que todos los usuarios que tienen aire acondicionado, tienen un 1 en Electricity, y que ningún usuario con un 0 tiene aire acondicionado, por lo que es posible afirmar que el 1 corresponde a tener electricidad, y el 0 a no tenerla. 
 
 
 Para clarificar, será categorizada con valores de "Si" y "No", que sustituirán a los unos y ceros, respectivamente.
@@ -342,76 +321,76 @@ Para clarificar, será categorizada con valores de "Si" y "No", que sustituirán
 datos$Electricity<-fct_recode(datos$Electricity,Si='1',No='0')
 ```
 
-El último grupo de variables, corresponde al número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus rangos son muy reducidos con respecto a las demás numéricas. Se inspecciona más a fondo estas variables viendo la media por familia filipina de los diferentes bienes.
+El último grupo de variables, corresponde al número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus rangos son muy reducidos con respecto a las demás numéricas. Se inspecciona más a fondo estas variables viendo sus principales estadísticos:
 
 ```{r warning=FALSE}
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.bedrooms))) %>%
+kable(c(summary(datos$Number.of.bedrooms)),caption="Summary de Number.of.bedrooms") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Refrigerator.Freezer))) %>%
+kable(c(summary(datos$Number.of.Refrigerator.Freezer)),caption="Summary de Number.of.Refrigerator.Freezer") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Washing.Machine))) %>%
+kable(c(summary(datos$Number.of.Washing.Machine)),caption="Summary de Number.of.Washing.Machine") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Airconditioner))) %>%
+kable(c(summary(datos$Number.of.Airconditioner)),caption="Summary de Number.of.Airconditioner") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Car..Jeep..Van))) %>%
+kable(c(summary(datos$Number.of.Car..Jeep..Van)),caption="Summary de Number.of.Car..Jeep..Van") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.CD.VCD.DVD))) %>%
+kable(c(summary(datos$Number.of.CD.VCD.DVD)),caption="Summary de Number.of.CD.VCD.DVD") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Cellular.phone))) %>%
+kable(c(summary(datos$Number.of.Cellular.phone)),caption="Summary de Number.of.Cellular.phone") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Component.Stereo.set))) %>%
+kable(c(summary(datos$Number.of.Component.Stereo.set)),caption="Summary de Number.of.Component.Stereo.set") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Landline.wireless.telephones))) %>%
+kable(c(summary(datos$Number.of.Landline.wireless.telephones)),caption="Summary de Number.of.Landline.wireless.telephones") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Personal.Computer))) %>%
+kable(c(summary(datos$Number.of.Personal.Computer)),caption="Summary de Number.of.Personal.Computer") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Motorcycle.Tricycle))) %>%
+kable(c(summary(datos$Number.of.Motorcycle.Tricycle)),caption="Summary de Number.of.Motorcycle.Tricycle") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Stove.with.Oven.Gas.Range))) %>%
+kable(c(summary(datos$Number.of.Stove.with.Oven.Gas.Range)),caption="Summary de Number.of.Stove.with.Oven.Gas.Range") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Television))) %>%
+kable(c(summary(datos$Number.of.Television)),caption="Summary de Number.of.Television") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
 #---------------------------------------------------------------------------------------------------------------------------------------------
-kable(c(summary(datos$Number.of.Motorized.Banca))) %>%
+kable(c(summary(datos$Number.of.Motorized.Banca)),caption="Summary de Number.of.Motorized.Banca") %>%
   kable_styling() %>%
   scroll_box(width = "100%", height = "100%")
 
@@ -448,6 +427,9 @@ var_train_num <- datos_training%>%select_if(is.numeric)
 
 Para estudiar más a fondo las variables cualitativas, es conveniente ver sus frecuencias absolutas, una a una, con ayuda de la función `table()`
 
+
+Region:
+
 ```{r warning=FALSE}
 
 # ----- Frecuencias absolutas y relativas ------
@@ -455,51 +437,287 @@ Para estudiar más a fondo las variables cualitativas, es conveniente ver sus fr
 # Frecuencias absolutas - función table() (tabla de contingencia)
 
 table(var_train_cat$Region)
+
+
+```
+
+Main.Source.of.Income
+
+```{r warning=FALSE}
+
 table(var_train_cat$Main.Source.of.Income)
-table(var_train_cat$Household.Head.Sex)
-table(var_train_cat$Household.Head.Marital.Status)
+
+```
+
+Household.Head.Job.or.Business.Indicator
+
+```{r warning=FALSE}
+
 table(var_train_cat$Household.Head.Job.or.Business.Indicator)
+
+```
+
+Household.Head.Sex
+
+```{r warning=FALSE}
+
+table(var_train_cat$Household.Head.Sex)
+
+
+```
+
+Household.Head.Marital.Status
+
+```{r warning=FALSE}
+
+table(var_train_cat$Household.Head.Marital.Status)
+
+
+```
+
+Household.Head.Job.or.Business.Indicator
+
+```{r warning=FALSE}
+
+table(var_train_cat$Household.Head.Job.or.Business.Indicator)
+
+```
+
+Household.Head.Class.of.Worker
+
+```{r warning=FALSE}
+
 table(var_train_cat$Household.Head.Class.of.Worker)
+
+```
+
+Type.of.Household
+
+```{r warning=FALSE}
+
 table(var_train_cat$Type.of.Household)
+
+```
+
+Type.of.Building.House
+
+```{r warning=FALSE}
+
 table(var_train_cat$Type.of.Building.House)
+
+```
+
+Type.of.Roof
+
+```{r warning=FALSE}
+
 table(var_train_cat$Type.of.Roof)
+
+```
+
+Type.of.Walls
+
+```{r warning=FALSE}
+
 table(var_train_cat$Type.of.Walls)
+
+```
+
+Tenure.Status
+
+```{r warning=FALSE}
+
 table(var_train_cat$Tenure.Status)
+
+```
+
+Toilet.Facilities
+
+```{r warning=FALSE}
+
 table(var_train_cat$Toilet.Facilities)
+
+```
+
+Electricity
+
+```{r warning=FALSE}
+
 table(var_train_cat$Electricity)
-table(var_train_cat$Electricity)
+
+```
+
+Main.Source.of.Water.Supply
+
+```{r warning=FALSE}
+
 table(var_train_cat$Main.Source.of.Water.Supply)
+
+```
+
+Number.of.Motorcycle.Tricycle
+
+```{r warning=FALSE}
+
 table(var_train_cat$Number.of.Motorcycle.Tricycle)
+
+```
+
+Household.Head.Highest.Grade.Completed
+
+```{r warning=FALSE}
+
 table(var_train_cat$Household.Head.Highest.Grade.Completed)
 
 ```
 
-Seguidamente, será repetido el mismo proceso para ver las frecuencias relativas, esta vez utilizando la función `prop.table()`
+Seguidamente, serán visualizadas las frecuencias relativas, esta vez utilizando la función `prop.table()`
+
+
+Region:
 
 ```{r warning=FALSE}
 
-# Frecuencias relativas - función prop.table
+# ----- Frecuencias absolutas y relativas ------
+
+# Frecuencias relativas - función prop.table()
 
 prop.table(table(var_train_cat$Region))
+
+
+```
+
+Main.Source.of.Income
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Main.Source.of.Income))
-prop.table(table(var_train_cat$Household.Head.Sex))
-prop.table(table(var_train_cat$Household.Head.Marital.Status))
+
+```
+
+Household.Head.Job.or.Business.Indicator
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Household.Head.Job.or.Business.Indicator))
+
+```
+
+Household.Head.Sex
+
+```{r warning=FALSE}
+
+prop.table(table(var_train_cat$Household.Head.Sex))
+
+
+```
+
+Household.Head.Marital.Status
+
+```{r warning=FALSE}
+
+prop.table(table(var_train_cat$Household.Head.Marital.Status))
+
+
+```
+
+Household.Head.Job.or.Business.Indicator
+
+```{r warning=FALSE}
+
+prop.table(table(var_train_cat$Household.Head.Job.or.Business.Indicator))
+
+```
+
+Household.Head.Class.of.Worker
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Household.Head.Class.of.Worker))
+
+```
+
+Type.of.Household
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Type.of.Household))
+
+```
+
+Type.of.Building.House
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Type.of.Building.House))
+
+```
+
+Type.of.Roof
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Type.of.Roof))
+
+```
+
+Type.of.Walls
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Type.of.Walls))
+
+```
+
+Tenure.Status
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Tenure.Status))
+
+```
+
+Toilet.Facilities
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Toilet.Facilities))
+
+```
+
+Electricity
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Electricity))
-prop.table(table(var_train_cat$Electricity))
+
+```
+
+Main.Source.of.Water.Supply
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Main.Source.of.Water.Supply))
+
+```
+
+Number.of.Motorcycle.Tricycle
+
+```{r warning=FALSE}
+
+prop.table(table(var_train_cat$Number.of.Motorcycle.Tricycle))
+
+```
+
+Household.Head.Highest.Grade.Completed
+
+```{r warning=FALSE}
+
 prop.table(table(var_train_cat$Household.Head.Highest.Grade.Completed))
 
 ```
 
-Al examinar las visualizaciones, la variable categórica `electricity` llama la atención. Se procede a comparar la variable electricity por regiones, ya que puede dar una idea acerca de en qué regiones puede existir mayor nivel de pobreza. Esto se realiza mediante la función `cross-table`, que nos mostrará las frecuencias absolutas, relativas en relación a la fila, frecuencias relativas en relación a la columna y frecuencias relativas globales.
+Al examinar las visualizaciones, la variable categórica `electricity` llama la atención. Se procede a comparar la variable electricity por regiones, ya que puede dar una idea acerca de en qué regiones puede existir mayor nivel de pobreza. Esto se realiza mediante la función `cross-table`, que nos mostrará las frecuencias absolutas, relativas en relación a la fila, frecuencias relativas en relación a la columna y frecuencias relativas globales:
 
 ```{r warning=FALSE}
 
@@ -508,6 +726,8 @@ CrossTable(var_train_cat$Region, var_train_cat$Electricity, prop.chisq = FALSE)
 ```
 
 Se incorpora al análisis una tercera variable que suscita interés en el estudio: la variable `Sex`, que indica el sexo de la persona que toma las decisiones en el hogar.
+
+# Tabla de contingencia region-sexo:
 
 ```{r warning=FALSE}
 
@@ -521,6 +741,8 @@ ftable(var_train_cat$Region, var_train_cat$Household.Head.Sex, var_train_cat$Ele
 
 Finalmente, se muestra una serie de visualizaciones de los datos mediante diagramas de barras:
 
+# Gráficos EDA con variables cualitativas individuales
+
 ```{r warning=FALSE}
 
 # ----- Gráficos EDA con variables cualitativas individuales -----
@@ -528,15 +750,18 @@ Finalmente, se muestra una serie de visualizaciones de los datos mediante diagra
 ggplot(datos, aes(Region)) + geom_bar() + ggtitle("Núm. familias. por Región") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ggplot(datos, aes(Main.Source.of.Income)) + geom_bar() + ggtitle("Núm. familias. por fuente de ingresos")
 
+```
+
+# Visualización de datos cualitativos
+
+```{r warning=FALSE}
+
 # ----- Visualización de datos cualitativos -----
 
 barplot(table(datos$Region), col = c("lightblue","yellow", "cadetblue4"),
         main = "Diagrama de barras de las frecuencias absolutas\n de la variable \"Region\"")
-barplot(table(datos$Household.Head.Sex, datos$Electricity),
-        beside = T, 
-        col = c("yellow", "lightblue"),
-        names = c("Women", "Men"), 
-        legend.text = c("No", "Yes"))
+
+
 barplot(prop.table(table(datos$Household.Head.Class.of.Worker,datos$Main.Source.of.Income)),
         beside = TRUE, col = c("chocolate","cornsilk1","cornflowerblue","blueviolet", "darkgoldenrod1", "coral", "brown", "chartreuse4"),
         legend.text = T, main = "Frecuencias relativas de fuente de\n ingresos por tipo de trabajo",
@@ -548,35 +773,11 @@ barplot(prop.table(table(datos$Household.Head.Class.of.Worker,datos$Main.Source.
 
 Se dispone a ver la distribución y densidad de cada una de las variables cuantitativas sin transformar, es decir, las variables "en crudo". De esta manera, se pretende identificar aquellas con los datos más sesgados, y poder observar las distribuciones y rangos que presentan. Se irán visualizando las distribuciones de las variables, agrupadas de 6 en 6 para facilitar la visualización.
 
-```{r warning=FALSE}
+```{r warning=FALSE, message=FALSE}
 
 # ----- Histograma de las variables cuantitativas sin transformar -----
 
 # Primeras 6 variables
-kable(c(summary(var_train_num$Total.Household.Income))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Total.Food.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Bread.and.Cereals.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Total.Rice.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Meat.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Total.Fish.and..marine.products.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
 
 p1 <- qplot(var_train_num$Total.Household.Income,
       geom="histogram",
@@ -631,31 +832,6 @@ grid.arrange(p1,p2,p3,p4,p5,p6,nrow=2)
 
 
 # Siguientes 6 variables
-
-kable(c(summary(var_train_num$Fruit.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Vegetables.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Restaurant.and.hotels.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Alcoholic.Beverages.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Tobacco.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Clothing..Footwear.and.Other.Wear.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
 
 
 d1 <- qplot(var_train_num$Fruit.Expenditure,
@@ -713,32 +889,6 @@ grid.arrange(d1,d2,d3,d4,d5,d6,nrow=2)
 
 # Siguientes 6 variables
 
-kable(c(summary(var_train_num$Housing.and.water.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Imputed.House.Rental.Value))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Medical.Care.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Transportation.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Communication.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Education.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-
-
 h1 <- qplot(var_train_num$Housing.and.water.Expenditure,
       geom="histogram",
       binwidth = 10000,
@@ -792,37 +942,6 @@ grid.arrange(h1,h2,h3,h4,h5,h6,nrow=2)
 
 
 # Siguientes 6 variables
-
-
-kable(c(summary(var_train_num$Miscellaneous.Goods.and.Services.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-
-kable(c(summary(var_train_num$Special.Occasions.Expenditure))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-
-kable(c(summary(var_train_num$Crop.Farming.and.Gardening.expenses))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-
-kable(c(summary(var_train_num$Total.Income.from.Entrepreneurial.Acitivites))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-
-kable(c(summary(var_train_num$Household.Head.Age))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-
-kable(c(summary(var_train_num$Total.Number.of.Family.members))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
 
 
 s1 <- qplot(var_train_num$Miscellaneous.Goods.and.Services.Expenditure,
@@ -880,29 +999,6 @@ grid.arrange(s1,s2,s3,s4,s5,s6,nrow=2)
 
 # Otras 6 variables
 
-kable(c(summary(var_train_num$Total.number.of.family.members.employed))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$House.Floor.Area))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$House.Age))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.bedrooms))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Television))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.CD.VCD.DVD))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
 
 g1 <- qplot(var_train_num$Total.number.of.family.members.employed,
       geom="histogram",
@@ -959,29 +1055,6 @@ grid.arrange(g1,g2,g3,g4,g5,g6,nrow=2)
 
 # Siguientes 6 variables
 
-kable(c(summary(var_train_num$Number.of.Component.Stereo.set))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Refrigerator.Freezer))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Washing.Machine))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Airconditioner))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Car..Jeep..Van))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Landline.wireless.telephones))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
 
 o1 <- qplot(var_train_num$Number.of.Component.Stereo.set,
       geom="histogram",
@@ -1037,25 +1110,6 @@ grid.arrange(o1,o2,o3,o4,o5,o6,nrow=2)
 	  
 # Últimas 5 variables
 
-kable(c(summary(var_train_num$Number.of.Cellular.phone))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Personal.Computer))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-
-kable(c(summary(var_train_num$Number.of.Stove.with.Oven.Gas.Range))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Motorized.Banca))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
-  
-kable(c(summary(var_train_num$Number.of.Motorcycle.Tricycle))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
 	  
 w1 <- qplot(var_train_num$Number.of.Cellular.phone,
       geom="histogram",
@@ -1132,21 +1186,22 @@ grupo2 <- grupo2y3 %>%
 grupo3 <- grupo2y3 %>%
   filter(Total.Household.Income >= 1000000)
 
-kable(c(summary(datos_training$Total.Household.Income))) %>%
-  kable_styling() %>%
-  scroll_box(width = "100%", height = "100%")
 
 boxplot(datos_training$Total.Household.Income,
-        border = c("red"))
+        border = c("red"),
+        caption="Diagrama de caja del conjunto de datos")
 
 boxplot(grupo1$Total.Household.Income,
-        border = c("red"))
+        border = c("red"),
+        caption="Diagrama de caja del grupo más desfavorecido económicamente")
 
 boxplot(grupo2$Total.Household.Income,
-        border = c("blue"))
+        border = c("blue"),
+        caption="Diagrama de caja del grupo con ingresos 'medios'")
 
 boxplot(grupo3$Total.Household.Income,
-        border = c("green"))
+        border = c("green"),
+        caption="Diagrama de caja del grupo más favorecido económicamente")
 
 
 ```
@@ -1154,6 +1209,9 @@ boxplot(grupo3$Total.Household.Income,
 * *Cuál es la relación entre el consumo de comida y ropa respecto a los ingresos familiares?* 
 
 Se decide filtrar por regiones y visualizar la cantidad de ingresos por familia a partir del tamaño de las burbujas.
+
+# Bubble plot para ver la relación entre consumo de comida y de ropa respecto a los ingresos (tamaño de la burbuja) dividido por regiones (ciudades)
+
 
 ```{r warning=FALSE}
 
@@ -1325,10 +1383,11 @@ Para utilizar un modelo de regresión lineal múltiple, es muy conveniente que s
 
 Por lo tanto, para poder aplicar un modelo de regresión multiple a las variables numéricas del presente trabajo, es necesario plantear una transformación para que se acerquen lo más posible a una distribución normal. Se recuerda que durante el análisis eda, se constató que la mayoría de las variables mostraban un sesgo a la derecha, lo cual podría estropear el diseño del modelo (distribuciones no normales).
 
+A continuación, se procede a aplicar una transformación a las variables: el logaritmo decimal. Se irán mostrando los histogramas de cada variable tras realizar la transformación, de manera que sea posible apreciar aquellas distribuciones que se han conseguido acercar a la distribución normal.
 
-La normalización produce que algunas variables muestren una distribución normal, o casi normal. Sin embargo, muchas de ellas siguen sin adquirir dicha distribución. A continuación, se procede a aplicar otra transformación distinta a las variables: el logaritmo decimal.
+NOTA: todos los valores iguales a 0, cuya transformación resulta en -Infinito, han sido imputados a un valor 0, para no entorpecer la visualización.
 
-```{r warning=FALSE}
+```{r warning=FALSE, message=FALSE}
 
 # Transformación logarítmica, que produce que los valores iguales a 0 se transformen a -Inf (por la definición del logaritmo)
 
@@ -1341,7 +1400,6 @@ Log_sin_inf <- replace(var_train_num_Log,var_train_num_Log=="-Inf",0)
 # Histogramas de las variables cuantitativas transformadas con el logaritmo
 
 
-summary(Log_sin_inf[1:7000,1])
 qplot(Log_sin_inf[1:7000,1],
       geom="histogram",
       main = "Histogram for Total Household Income", 
@@ -1349,7 +1407,6 @@ qplot(Log_sin_inf[1:7000,1],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,2])
 qplot(Log_sin_inf[1:7000,2],
       geom="histogram",
       main = "Histogram for Total Food Expenditure", 
@@ -1357,7 +1414,6 @@ qplot(Log_sin_inf[1:7000,2],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,3])
 qplot(Log_sin_inf[1:7000,3],
       geom="histogram",
       main = "Histogram for Bread.and.Cereals.Expenditure", 
@@ -1365,7 +1421,6 @@ qplot(Log_sin_inf[1:7000,3],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,4])
 qplot(Log_sin_inf[1:7000,4],
       geom="histogram",
       main = "Histogram for Total Rice Expenditure", 
@@ -1373,7 +1428,6 @@ qplot(Log_sin_inf[1:7000,4],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,5])
 qplot(Log_sin_inf[1:7000,5],
       geom="histogram",
       main = "Histogram for Meat.Expenditure", 
@@ -1381,7 +1435,6 @@ qplot(Log_sin_inf[1:7000,5],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,6])
 qplot(Log_sin_inf[1:7000,6],
       geom="histogram",
       main = "Histogram for Total.Fish.and..marine.products.Expenditure", 
@@ -1389,7 +1442,6 @@ qplot(Log_sin_inf[1:7000,6],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,7])
 qplot(Log_sin_inf[1:7000,7],
       geom="histogram",
       main = "Histogram for Fruit.Expenditure", 
@@ -1397,7 +1449,6 @@ qplot(Log_sin_inf[1:7000,7],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,8])
 qplot(Log_sin_inf[1:7000,8],
       geom="histogram",
       main = "Histogram for Vegetables.Expenditure", 
@@ -1405,7 +1456,6 @@ qplot(Log_sin_inf[1:7000,8],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,9])
 qplot(Log_sin_inf[1:7000,9],
       geom="histogram",
       main = "Histogram for Restaurant.and.hotels.Expenditure", 
@@ -1413,7 +1463,6 @@ qplot(Log_sin_inf[1:7000,9],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,10])
 qplot(Log_sin_inf[1:7000,10],
       geom="histogram",
       main = "Histogram for Alcoholic.Beverages.Expenditure", 
@@ -1421,7 +1470,6 @@ qplot(Log_sin_inf[1:7000,10],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,11])
 qplot(Log_sin_inf[1:7000,11],
       geom="histogram",
       main = "Histogram for Tobacco.Expenditure", 
@@ -1429,7 +1477,6 @@ qplot(Log_sin_inf[1:7000,11],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,12])
 qplot(Log_sin_inf[1:7000,12],
       geom="histogram",
       main = "Histogram for Clothing..Footwear.and.Other.Wear.Expenditure", 
@@ -1437,7 +1484,6 @@ qplot(Log_sin_inf[1:7000,12],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,13])
 qplot(Log_sin_inf[1:7000,13],
       geom="histogram",
       main = "Histogram for Housing.and.water.Expenditure", 
@@ -1445,7 +1491,6 @@ qplot(Log_sin_inf[1:7000,13],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,14])
 qplot(Log_sin_inf[1:7000,14],
       geom="histogram",
       main = "Histogram for Imputed.House.Rental.Value", 
@@ -1453,7 +1498,6 @@ qplot(Log_sin_inf[1:7000,14],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,15])
 qplot(Log_sin_inf[1:7000,15],
       geom="histogram",
       main = "Histogram for Medical.Care.Expenditure", 
@@ -1461,7 +1505,6 @@ qplot(Log_sin_inf[1:7000,15],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,16])
 qplot(Log_sin_inf[1:7000,16],
       geom="histogram",
       main = "Histogram for Transportation.Expenditure", 
@@ -1469,7 +1512,6 @@ qplot(Log_sin_inf[1:7000,16],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,17])
 qplot(Log_sin_inf[1:7000,17],
       geom="histogram",
       main = "Histogram for Communication.Expenditure", 
@@ -1477,7 +1519,6 @@ qplot(Log_sin_inf[1:7000,17],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,18])
 qplot(Log_sin_inf[1:7000,18],
       geom="histogram",
       main = "Histogram for Education.Expenditure", 
@@ -1485,7 +1526,6 @@ qplot(Log_sin_inf[1:7000,18],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,19])
 qplot(Log_sin_inf[1:7000,19],
       geom="histogram",
       main = "Histogram for Miscellaneous.Goods.and.Services.Expenditure", 
@@ -1493,7 +1533,6 @@ qplot(Log_sin_inf[1:7000,19],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,20])
 qplot(Log_sin_inf[1:7000,20],
       geom="histogram",
       main = "Histogram for Special.Occasions.Expenditure", 
@@ -1501,7 +1540,6 @@ qplot(Log_sin_inf[1:7000,20],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,21])
 qplot(Log_sin_inf[1:7000,21],
       geom="histogram",
       main = "Histogram for Crop.Farming.and.Gardening.expenses", 
@@ -1509,7 +1547,6 @@ qplot(Log_sin_inf[1:7000,21],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,22])
 qplot(Log_sin_inf[1:7000,22],
       geom="histogram",
       main = "Histogram for Total.Income.from.Entrepreneurial.Acitivites", 
@@ -1517,8 +1554,6 @@ qplot(Log_sin_inf[1:7000,22],
       fill=I("blue"), 
       col=I("red"))
 	  
-	  
-summary(Log_sin_inf[1:7000,23])
 qplot(Log_sin_inf[1:7000,23],
       geom="histogram",
       main = "Histogram for Household.Head.Age", 
@@ -1526,7 +1561,6 @@ qplot(Log_sin_inf[1:7000,23],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,24])
 qplot(Log_sin_inf[1:7000,24],
       geom="histogram",
       main = "Histogram for Total.Number.of.Family.members", 
@@ -1535,7 +1569,6 @@ qplot(Log_sin_inf[1:7000,24],
       col=I("red"))
 	  
 	  
-summary(Log_sin_inf[1:7000,25])
 qplot(Log_sin_inf[1:7000,25],
       geom="histogram",
       main = "Histogram for Total.number.of.family.members.employed", 
@@ -1543,7 +1576,6 @@ qplot(Log_sin_inf[1:7000,25],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,26])
 qplot(Log_sin_inf[1:7000,26],
       geom="histogram",
       main = "Histogram for House.Floor.Area", 
@@ -1551,7 +1583,6 @@ qplot(Log_sin_inf[1:7000,26],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,27])
 qplot(Log_sin_inf[1:7000,27],
       geom="histogram",
       main = "Histogram for House.Age", 
@@ -1559,7 +1590,6 @@ qplot(Log_sin_inf[1:7000,27],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,28])
 qplot(Log_sin_inf[1:7000,28],
       geom="histogram",
       main = "Histogram for Number.of.bedrooms", 
@@ -1568,7 +1598,6 @@ qplot(Log_sin_inf[1:7000,28],
       col=I("red"))
 
 
-summary(Log_sin_inf[1:7000,29])
 qplot(Log_sin_inf[1:7000,29],
       geom="histogram",
       main = "Histogram for Number.of.Television", 
@@ -1577,7 +1606,6 @@ qplot(Log_sin_inf[1:7000,29],
       col=I("red"))
 
 
-summary(Log_sin_inf[1:7000,30])
 qplot(Log_sin_inf[1:7000,30],
       geom="histogram",
       main = "Histogram for Number.of.CD.VCD.DVD", 
@@ -1585,7 +1613,6 @@ qplot(Log_sin_inf[1:7000,30],
       fill=I("blue"), 
       col=I("red"))
 	  
-summary(Log_sin_inf[1:7000,31])
 qplot(Log_sin_inf[1:7000,31],
       geom="histogram",
       main = "Histogram for Number.of.Component.Stereo.set", 
@@ -1594,7 +1621,6 @@ qplot(Log_sin_inf[1:7000,31],
       col=I("red"))
 
 
-summary(Log_sin_inf[1:7000,32])
 qplot(Log_sin_inf[1:7000,32],
       geom="histogram",
       main = "Histogram for Number.of.Refrigerator.Freezer", 
@@ -1603,7 +1629,6 @@ qplot(Log_sin_inf[1:7000,32],
       col=I("red")) 
 
 
-summary(Log_sin_inf[1:7000,33])
 qplot(Log_sin_inf[1:7000,33],
       geom="histogram",
       main = "Histogram for Number.of.Washing.Machine", 
@@ -1612,7 +1637,6 @@ qplot(Log_sin_inf[1:7000,33],
       col=I("red"))
 
 
-summary(Log_sin_inf[1:7000,34])
 qplot(Log_sin_inf[1:7000,34],
       geom="histogram",
       main = "Histogram for Number.of.Airconditioner", 
@@ -1621,7 +1645,6 @@ qplot(Log_sin_inf[1:7000,34],
       col=I("red"))
 
 
-summary(Log_sin_inf[1:7000,35])
 qplot(Log_sin_inf[1:7000,35],
       geom="histogram",
       main = "Histogram for Number.of.Car..Jeep..Van", 
@@ -1630,7 +1653,6 @@ qplot(Log_sin_inf[1:7000,35],
       col=I("red")) 
 
 
-summary(Log_sin_inf[1:7000,36])
 qplot(Log_sin_inf[1:7000,36],
       geom="histogram",
       main = "Histogram for Number.of.Landline.wireless.telephones", 
@@ -1638,7 +1660,6 @@ qplot(Log_sin_inf[1:7000,36],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,37])
 qplot(Log_sin_inf[1:7000,37],
       geom="histogram",
       main = "Histogram for Number.of.Cellular.phone", 
@@ -1646,7 +1667,6 @@ qplot(Log_sin_inf[1:7000,37],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,38])
 qplot(Log_sin_inf[1:7000,38],
       geom="histogram",
       main = "Histogram for Number.of.Personal.Computer", 
@@ -1654,7 +1674,6 @@ qplot(Log_sin_inf[1:7000,38],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,39])
 qplot(Log_sin_inf[1:7000,39],
       geom="histogram",
       main = "Histogram for Number.of.Stove.with.Oven.Gas.Range", 
@@ -1662,7 +1681,6 @@ qplot(Log_sin_inf[1:7000,39],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,40])
 qplot(Log_sin_inf[1:7000,40],
       geom="histogram",
       main = "Histogram for Number.of.Motorized.Banca", 
@@ -1670,7 +1688,6 @@ qplot(Log_sin_inf[1:7000,40],
       fill=I("blue"), 
       col=I("red"))
 
-summary(Log_sin_inf[1:7000,41])
 qplot(Log_sin_inf[1:7000,41],
       geom="histogram",
       main = "Histogram for Number.of.Motorcycle.Tricycle", 
@@ -1695,7 +1712,6 @@ Recordamos las condiciones  óptimas de cualquier modelo de regresión lineal m�
 * Las variables no pueden estar altamente correlacionadas entre sí
 
 Por lo tanto, y a la vista del apartado anterior, se partirá del conjunto de variables transformadas logarítmicamente. Además, serán descartadas aquellas variables con distribuciones claramente asimétricas. Después, mediante un análisis de la correlación entre pares de las variables matrices, se rechazarán las variables altamente correladas entre sí a la hora de diseñar el modelo de regresión lineal múltiple.
-
 
 
 ```{r warning=FALSE}
@@ -1736,6 +1752,7 @@ cor_matrix_log_reduced <- round(cor(Log_reduced),4)
 
 ```
 
+Una vez seleccionadas solo aquellas variables que tienen distribuciones simétricas, se procede a mostrar un mapa de calor de la matriz de correlaciones cruzadas:
 
 ```{r warning=FALSE}
 #----- Mapa de calor de la matriz de correlaciones cruzadas----------
@@ -1748,7 +1765,9 @@ ggplot(data = mapa_corr, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(a
 
 ## 7. Selección de variables y modelo
 
-Es conveniente evitar variables altamente correlacionadas entre sí, descartando de cada par la que más correlada esté con todas las demás. En el análisis no se incluirá la variable a predecir ("Total.Household.Income"), pues en ese caso la alta correlación sí es interesante.
+Es conveniente evitar variables altamente correlacionadas entre sí, descartando de cada par la que más correlada esté con todas las demás. En el análisis no se incluirá la variable a predecir ("Total.Household.Income").
+
+Se aplica un umbral de valor absoluto igual a 0.5, para filtar aquellas variables correladas entre sí por encima de él.
 
 ```{r warning=FALSE}
 
@@ -1773,11 +1792,16 @@ cor_mat_log<-cor(new_var_train_log)
 
 cor_mat_log<-cor_mat_log[,order(cor_mat_log[1,],decreasing = T)]
 
+```
+
+Mapa de calor tras descartar ciertas variables:
+
+```{r warning=FALSE}
+
 ggcorrplot(t(cor_mat_log), method = "circle") # Representación gráfica del mapa de calor
 
 
-
-# Se escogerán las que tengan una correlación > de 0.4 con respecto al "Total.Household.Income"
+# Se escogerán las que tengan una correlación > de 0.5 con respecto al "Total.Household.Income"
 
 Variables_ordenadas<-data.frame(t(cor_mat_log)[,'Total.Household.Income']) # Es para quedarse con la columna ordenada
 colnames(Variables_ordenadas)<-'Coef. Corr'
@@ -1788,6 +1812,7 @@ View(Variables_ordenadas)
 
 ## 8. Ajuste, interpretación y diagnosis del modelo de regresión lineal múltiple
 
+Se realiza la regresión lineal múltiple con las variables cuyo valor de correlación con el Income es superior a 0.4. Después, se calculan los residuos, los valores ajustados, y se visualizan:
 
 ```{r warning=FALSE}
 
@@ -1797,6 +1822,7 @@ RLM<-lm(Total.Household.Income~Housing.and.water.Expenditure
           +Clothing..Footwear.and.Other.Wear.Expenditure
           +Fruit.Expenditure
           ,data=new_var_train_log)
+
 
 # Cálculo de residuos del modelo
 
@@ -1809,6 +1835,13 @@ valores.ajustados <- (fitted(RLM))
 # Verificación de la no relación lineal entre valores predichos y  residuos
 
 plot(valores.ajustados, residuos,col="black")
+
+
+```
+
+# Resumen del modelo diseñado:
+
+```{r warning=FALSE}
 
 # Valores de los betas estimados en la regresión lineal múltiple
 
@@ -1830,7 +1863,7 @@ Para comprobar que el resultado es correcto, se observa en la próxima gráfica 
 
 * H1: los datos no proceden de una distribución normal
 
-```{r warning=FALSE}
+```{r warning=FALSE, message=FALSE}
 
 qqnorm(residuos)
 
@@ -1850,8 +1883,12 @@ residuos%>%summarise(media=mean(residuos),
 
 Si se observan el histograma y el gráfico Q-Q, parece que los residuos siguen una distribución normal. Sin embargo, en el test de normalidad se obtiene un p-valor muy pequeño, cercano al nivel de significancia alpha = 0.05.
 
+
 # Validación del modelo
 
+Utilizando el conjunto de test (30% de las observaciones) separado al principio, se evaluará el modelo, para ver sus prestaciones a la hora de calcular los ingresos.
+
+Visualizamos los residuos obtenidos:
 
 ```{r warning=FALSE}
 
@@ -1885,12 +1922,15 @@ valores_reales_log<-log10(pre_datos_testing_original$Total.Household.Income)
 residuos_log<-valores_reales_log  -predichos_log
 ```
 
+
+Es conveniente representar los residuos frente a los valores predichos en el dominio transformado (log10)
+
 ```{r warning=FALSE}
 # Es conveniente representar los residuos frente a los valores predichos en el dominio transformado (log10)
 plot(predichos_log,residuos_log)
 ```
 
-Se puede observar que el gráfico no varía mucho con respecto al mismo gráfico representado anteriormente (utilizando el conjunto de training).
+Se puede observar que el gráfico no varía mucho con respecto al mismo gráfico representado anteriormente (utilizando el conjunto de training):
 
 ```{r warning=FALSE}
 df_comp_log10<-data.frame(predichos_log10=predichos_log,Valores_reales_log=valores_reales_log)
@@ -1907,17 +1947,20 @@ residuos<-Valores_reales-Valores_predichos
 
 ```
 
+
+Son representados en un gráfico de dispersión los valores predichos por el modelo con los residuos en unidades normales (deshaciendo el logaritmo)
+
 ```{r warning=FALSE}
 # Representamos en un gráfico de dispersión los valores predichos por el modelo con los residuos en unidades normales (deshaciendo el logaritmo)
 plot(Valores_predichos,residuos)
 ```
 
+Se muestra una comparativa entre los valores predichos y los reales:
+
 ```{r warning=FALSE}
 #Comprobamos los valores predichos y originales en los dos dataFrames siguientes:
 df_com_original<-data.frame(predichos=Valores_predichos,reales=Valores_reales,residuos=residuos)
 
-#Transformados
-df_comp_log10
 #Originales
 df_com_original
 
@@ -1936,9 +1979,11 @@ A la vista del máximo y del mínimo del valor absoluto de los residuos, se pued
 
 Para comprobar la normalidad de los residuos, se utiliza el gráfico Q-Q que compara los cuantiles teóricos de una normal con los calculados. Cuantos más puntos caigan en la recta, mejor.
 
-Llegados hasta este punto, resulta interesante mostrar el gráfico Q-Q, histograma y test de normalidad para los resudios en unidades normales y en unidades logaritmicas obtenidos en la predicción
+Llegados hasta este punto, resulta interesante mostrar el gráfico Q-Q, histograma y test de normalidad para los residuos.
 
-```{r warning=FALSE}
+* Datos transformados logarítmicamente:
+
+```{r warning=FALSE, message=FALSE}
 # Unidades logarítmicas
 qqnorm(residuos_log)
 qqline(residuos_log)
@@ -1955,7 +2000,9 @@ residuos_log%>%summarise(media=mean(residuos_log),
                             var=var(residuos_log))
 ```
 
-```{r warning=FALSE}
+* Datos sin transformar (en su escala original)
+
+```{r warning=FALSE, message=FALSE}
 # Unidades normales
 qqnorm(residuos)
 qqline(residuos)
