@@ -132,9 +132,9 @@ Además, se categorizarán ciertas variables, seleccionando las posibles categor
 
 ### Corrección de valores en variables y categorización
 
-La función summary nos da un resumen rápido de cada variable de nuestro data set. De esta forma, podremos inspeccionar rápidamente infomación como la proporción de cada tipo de categorías dentro de las variables categóricass o estadísticos básicos como la media, los mínimos y los máximos de las variables numéricas.
+La función summary ofrece un resumen  de cada variable del data set. De esta forma, se podrá inspeccionar fácilmente infomación como los estadísticos básicos en variables numéricas, o la proporción de cada tipo de categorías dentro de las variables categóricas.
 
-Este primer paso inicial no busca un análisis exahustivo de los datos, sino más bien un contacto inicial, que nos hagan ver anomalías a primera vista. Por eso, no nos pararemos demasiado en ellos salvo que veamos algo interesante a comentar.
+Este primer paso no busca un análisis exahustivo de los datos, sino más bien un contacto inicial que permita detectar anomalías a primera vista. Se comentarán sólo los resultados destacables.
 
 
 ```{r warning=FALSE}
@@ -429,7 +429,7 @@ var_train_num <- datos_training%>%select_if(is.numeric)
 
 ### 4.2. Análisis variables cualitativas
 
-Para estudiar más a fondo las variables cualitativas, es conveniente ver sus frecuencias absolutas, una a una, con ayuda de la función `table()`. Sacar la frecuencia absoluta de cada variable cualitativa es importante para obtener información de como de homogénea es nuestra población (e.g tipo de trabajo, sexo o tipo de casas más comunes). Además al tener variables muy específicas sobre la estructura de la casa y bienes básicos del hogar, podremos ver fácilmente si la mayoría de nuestra población dispone de una calidad de vida digna, o por el contrario, tiende a estar en niveles de pobreza alarmantes (e.g tener electricidad y no tener)
+Para estudiar más a fondo las variables cualitativas, es conveniente ver sus frecuencias absolutas, una a una, con ayuda de la función `table()`. Sacar la frecuencia absoluta de cada variable cualitativa es importante para determinar cuán homogénea es la población (por ejemplo, tipo de trabajo, sexo o tipo de casas más comunes). Además, al disponer de variables muy específicas sobre la estructura de la casa y bienes básicos del hogar, podrá verse fácilmente si la mayoría de la población dispone de una calidad de vida digna, o por el contrario, tiende a estar en niveles de pobreza alarmantes (por ejemplo, tener electricidad o no tener).
 
 
 Region:
@@ -746,9 +746,9 @@ ftable(var_train_cat$Region, var_train_cat$Household.Head.Sex, var_train_cat$Ele
 
 ### Gráficos EDA con variables cualitativas individuales
 
-Tras haber hecho un análisis inicial de cada variable de nuestro data set, es hora de visualizar algunos de los datos que más atención nos ha llamado. De los que hemos seleccionado, creemos que los `ingresos`, la `región` y el `tipo de trabajo` son puntos clave para modelar mejor la forma que toma esta población. 
+Tras haber realizado un análisis inicial de cada variable del data set, es hora de visualizar algunos de los datos que más llamativos. De las variables preseleccionadas, se destacan los `ingresos`, la `región` y el `tipo de trabajo` como puntos clave para modelar mejor la distribución de esta población. 
 
-Más adelante, cuando visualicemos algunos de los datos de nuestras variables combinados y plantearnos algunas preguntas de interés, podremos sacar algunas conclusiones sobre las características más relevantes de nuestra población filipina (véase apartado 4.4 Representación datos cualitativos y cuantitativos)
+Más adelante, cuando sean visualizados algunos de los datos de las variables combinados, y se planteen algunas preguntas de interés, podrán sacarse algunas conclusiones sobre las características más relevantes de la población filipina (véase apartado 4.4 Representación datos cualitativos y cuantitativos).
 
 
 ```{r warning=FALSE}
