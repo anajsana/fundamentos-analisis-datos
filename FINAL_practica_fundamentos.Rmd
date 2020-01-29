@@ -36,7 +36,7 @@ Durante varios años, identificar un modelo de clasificación socio-económico �
 
 El análisis de dividirá en dos fases:
 
-* La primera fase consistirá en un análisis exploratorio de los datos para entender mejor el significado y la relevancia de cada una de las variables. Se estudiarán puntos clave como el nivel de correlación entre la variable de interés y las demás. Por ello, para cada variable estudiada, se planteará:
+* La primera fase consistirá en un análisis exploratorio de los datos para entender mejor el significado y la relevancia de cada una de las variables. Se estudiarán puntos clave como el nivel de correlación entre la variable de interés y las demás. Por ello, **para cada variable estudiada**, se planteará:
 
     * ¿Se considerará esta variable al predecir los ingresos familiares? Es decir, ¿formará parte del modelo diseñado?
     * Si es así, ¿cómo de relevante es esta variable a la hora de determinar la variable respuesta?
@@ -48,7 +48,7 @@ El análisis de dividirá en dos fases:
 
 ### 4.1. Procesado inicial
 
-Antes de proceder con la visualización gráfica de las variables (para tener un visión de la distribución de nuestros datos), será realizado un preprocesamiento y limpieza del conjunto de datos. Serán etiquetados como NA aquellos valores que así deban considerarse; se eliminarán ciertas variables por no presentar interés para el objetivo planteado, y por último, seran preparados los conjuntos de test/validación y de train. Este último será el que sirva para entrenar el modelo de predicción, que será después evaluado con el conjunto de test/validación.
+Antes de proceder con la visualización gráfica de las variables (para tener un visión de la distribución de nuestros datos), será realizado un preprocesamiento y limpieza del conjunto de datos. Serán etiquetados como NA aquellos valores que así deban considerarse; se eliminarán ciertas variables por no presentar interés para el objetivo planteado o por no estar bien categorizadas, y por último, seran preparados los conjuntos de test/validación y de train. Este último se utilizará para entrenar el modelo de predicción, que será después evaluado con el conjunto de test/validación.
 
 
 ```{r setup, include=FALSE}
@@ -83,12 +83,12 @@ library(kableExtra)
 
 ```
 
-A continuación, se realizará un resumen de los estadísticos principales de las variables numéricas para ver su media, desviación típica, número total de muestras y valores faltanes en cada variable. Curiosamente, solo se encuentran datos faltantes en las variables categóricas, que más adelante se tratarán.
+A continuación, se realizará un resumen de los estadísticos principales de las **variables numéricas**. Curiosamente, solo se encuentran datos faltantes en las variables categóricas, que más adelante se tratarán.
 
 ```{r warning=FALSE}
 # ----- Carga de datos -----
 
-datos<-read.csv('Family Income and Expenditure.csv',stringsAsFactors = TRUE)
+datos<-read.csv('Family_Income_and_Expenditure.csv',stringsAsFactors = TRUE)
 datos$Electricity<-as.factor(datos$Electricity)
 datos_occupation <- datos
 
@@ -115,24 +115,23 @@ cat <- datos %>%
 
 ```
 
-A la luz de la escasa documentación referida al conjunto de datos, ha sido imposible descifrar el significado de algunas variables (por ejemplo, Agricultural.Household.indicator). Por ello, se decide eliminar aquellas cuya interpretación es desconocida.
+A la luz de la escasa documentación referida al conjunto de datos, ha sido imposible descifrar el significado de algunas variables. Por ejemplo, la variable Agricultural.Household.indicator posee 3 valores **0,1 y 2**. Tras no conocer su interpretación se decide eliminar de nuestro estudio.
 
 ```{r warning=FALSE}
 
 # ----- Eliminación de variables del dataset -----
 
-datos<-datos%>%select(-Agricultural.Household.indicator,-Members.with.age.less.than.5.year.old,-Members.with.age.5...17.years.old
-                      ,-Household.Head.Occupation)
+datos<-datos%>%select(-Agricultural.Household.indicator,-Members.with.age.less.than.5.year.old,-Members.with.age.5...17.years.old,-Household.Head.Occupation)
 ```
 
 
-Una vez descartadas aquellas variables, se irán etiquetando como NA todos aquellos valores considerados erróneos o no recogidos (missing values). Estos vendrán normalmente etiquetados por `unknown`, `not applicable` o `0`. Sin embargo, en este último caso es necesario tener cuidado, ya que algunas variables pueden tomar valor 0 y esto ser correcto, debido al tipo de datos que son (valores socio-económicos).
+Una vez descartadas aquellas variables, se irán etiquetando como NA (missing values) todos aquellos valores considerados erróneos o no recogidos. Por ejemplo, en algunas variables categóricas existe la categoría `unknown`, `not applicable`, etc. En el caso de las cuantitativas hay que tener cierto cuidado ya que algunas tienen valor `0`. Este valor no parace indicar que se trate de un `NA` ya que en casos de familias en situación de extrema pobreza, un gasto de `0` en restaurantes y hoteles tiene sentido. Se recuerda que en este data set se trabajan con datos socio económicos en los cuales el valor `0` tiene sentido.
 
-Además, se categorizarán ciertas variables, seleccionando las posibles categorías que podrán adquirir.
+También, se categorizarán ciertas variables, seleccionando las posibles categorías que podrán adquirir.
 
 ### Corrección de valores en variables y categorización
 
-La función summary ofrece un resumen  de cada variable del data set. De esta forma, se podrá inspeccionar fácilmente infomación como los estadísticos básicos en variables numéricas, o la proporción de cada tipo de categorías dentro de las variables categóricas.
+La función summary ofrece un resumen de cada variable del data set. De esta forma, se podrá inspeccionar fácilmente infomación como los estadísticos básicos en variables numéricas, o la proporción de cada tipo de categorías dentro de las variables categóricas.
 
 Este primer paso no busca un análisis exahustivo de los datos, sino más bien un contacto inicial que permita detectar anomalías a primera vista. Se comentarán sólo los resultados destacables.
 
@@ -325,7 +324,7 @@ Para clarificar, será categorizada con valores de "Si" y "No", que sustituirán
 datos$Electricity<-fct_recode(datos$Electricity,Si='1',No='0')
 ```
 
-El último grupo de variables, corresponde al número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus rangos son muy reducidos con respecto a las demás numéricas. Se inspecciona más a fondo estas variables viendo sus principales estadísticos:
+El último grupo de variables, corresponde al número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus rangos son muy reducidos con respecto a las demás. Se inspecciona más a fondo estas variables viendo sus principales estadísticos:
 
 ```{r warning=FALSE}
 #---------------------------------------------------------------------------------------------------------------------------------------------
@@ -591,7 +590,7 @@ prop.table(table(var_train_cat$Region))
 
 ```
 
-Main.Source.of.Income
+Main.Source.of.Income:
 
 ```{r warning=FALSE}
 
@@ -1174,7 +1173,7 @@ Para esta sección, han sido planteadas una serie de preguntas interesantes que 
 
 **¿Qué porcentaje de la población tiene unos ingresos inferiores a 400000$ anuales** 
 
-La mayoría ronda por debajo de los 400000 pesos filipinos por familia al año (en torno al 85%). A continuación, se realiza una subdivisión del conjunto de datos en 3 subconjuntos: familias con ingresos inferiores a 400000 pesos filipinos, familias con ingresos entre 400000 y 1100000 pesos filipinos, y el resto. Mediante diagramas de caja (boxplot) se observa como esta división permite tener 3 grupos de familias en función de sus ingresos sin valores atípicos en los dos primeros, pese a observar mayor dispersión (desigualdad de ingresos) en el grupo más favorecido económicamente.
+La mayoría ronda por debajo de los 400000 pesos filipinos por familia al año (en torno al 85%). A continuación, se realiza una subdivisión del conjunto de datos en 3 subconjuntos: familias con ingresos inferiores a 400000 pesos filipinos, familias con ingresos entre 400000 y 1100000 pesos filipinos, y el resto. Mediante diagramas de caja (boxplot) se observa como esta división permite tener 3 grupos de familias en función de sus ingresos sin valores atípicos (gráfica 2 y 3), pese a observar mayor dispersión (desigualdad de ingresos) en el grupo más favorecido económicamente.
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -1195,19 +1194,19 @@ grupo3 <- grupo2y3 %>%
 
 boxplot(datos_training$Total.Household.Income,
         border = c("red"),
-        caption="Diagrama de caja del conjunto de datos")
+        title="Diagrama de caja del conjunto de datos")
 
 boxplot(grupo1$Total.Household.Income,
         border = c("red"),
-        caption="Diagrama de caja del grupo más desfavorecido económicamente")
+        title="Diagrama de caja del grupo más desfavorecido económicamente")
 
 boxplot(grupo2$Total.Household.Income,
         border = c("blue"),
-        caption="Diagrama de caja del grupo con ingresos 'medios'")
+        title="Diagrama de caja del grupo con ingresos 'medios'")
 
 boxplot(grupo3$Total.Household.Income,
         border = c("green"),
-        caption="Diagrama de caja del grupo más favorecido económicamente")
+        title="Diagrama de caja del grupo más favorecido económicamente")
 
 
 ```
@@ -1216,12 +1215,10 @@ boxplot(grupo3$Total.Household.Income,
 
 Se decide filtrar por regiones y visualizar la cantidad de ingresos por familia a partir del tamaño de las burbujas.
 
-## Bubble plot para ver la relación entre consumo de comida y de ropa respecto a los ingresos (tamaño de la burbuja) dividido por regiones (ciudades)
+**Bubble plot para ver la relación entre consumo de comida y de ropa respecto a los ingresos (tamaño de la burbuja) dividido por regiones (ciudades)**
 
 
 ```{r warning=FALSE}
-
-# Bubble plot para ver la relación entre consumo de comida y de ropa respecto a los ingresos (tamaño de la burbuja) dividido por regiones (ciudades)
 
 datos_training %>%
   ggplot(aes(x=Clothing..Footwear.and.Other.Wear.Expenditure, y=Total.Food.Expenditure, size = Total.Household.Income, color = Region, scientific=F)) +
@@ -1239,7 +1236,7 @@ Como se indicaba al principio de esta sección, la mayoría es una población ag
 
 # Profesiones más comúnes en Filipinas
 
-by_common_jobs <- datos_occupation %>% 
+by_common_jobs <- datos_occupation %>%na.omit()%>%
   group_by(Household.Head.Occupation) %>%
   summarise(Total = n()) %>%
   arrange(desc(Total)) %>%
@@ -1251,7 +1248,7 @@ ggplot(data = by_common_jobs) + geom_bar(mapping = aes(x = Household.Head.Occupa
 
 **¿Cuáles son las regiones de Filipinas con más gastos?** 
 
-Los datos tienen un gran número de valores atípicos, por lo que para ver el boxplot es necesario aplicar un logaritmo en base 10. Vemos que las familias de la Región `NAT` son aquellas que más gastos tienen
+Los datos tienen un gran número de valores atípicos, por lo que para ver el boxplot es necesario aplicar un logaritmo en base 10. Vemos que las familias de las regiones `CAR` y `NCR` son aquellas que más gastos tienen
 
 ```{r warning=FALSE}
 
@@ -1279,6 +1276,8 @@ Una vez hecho el análisis EDA, con un mejor conocimiento de los datos disponibl
 El primer paso es un diagnóstico de valores faltantes, que tendremos que imputar con valores factibles.
 
 Se recuerda que, a partir de ahora, se trabajará con el conjunto de datos `train`, ya que los datos `test` no serán utilizados hasta la última parte de este trabajo. Además, a la vista del apartado 4.4., se decide trabajar con el grupo 1, para evitar tener una segmentación de la población.
+
+**Cálculo del número total de NA en el conjunto de datos de train**
   
   
 ```{r warning=FALSE}
@@ -1293,22 +1292,37 @@ var_train_num <- datos_training%>%select_if(is.numeric)
 # Cálculo del número total de NA en el conjunto de datos de train
 
 length(which(is.na(datos_training)))
+```
 
+**Cálculo del número total de filas que contienen al menos un NA en el conjunto de datos de train**
+
+```{r warning=FALSE}
 # Cálculo del número total de filas que contienen al menos un NA en el conjunto de datos de train
 
 length(which(!complete.cases(datos_training)))
 
 ```
 
-Existen bastantes valores NA en el conjunto, pero todos corresponden a las variables cualitativas. Se muestra gráficamente como se distribuyenlos NA en el conjunto de datos correspondiente a las variables cualitativas.
+Se observa que existen bastantes valores NA en el conjunto, pero todos corresponden a las variables cualitativas. Se muestra gráficamente como se distribuyenlos NA en el conjunto de datos correspondiente a las variables cualitativas.
+
+**Número de NA en el conjunto de variables cuantitativas**
+
+```{r}
+length(which(is.na(var_train_num)))
+```
+
+**Número de NA en el conjunto de variables cualitativas**
+
+```{r}
+length(which(is.na(var_train_cat)))
+```
 
 ```{r warning=FALSE}
 
 # Número de NA en el conjunto de variables cuantitativas y en el conjunto de las cualitativas
 
-length(which(is.na(var_train_num)))
-length(which(is.na(var_train_cat)))
-length(which(is.na(var_train_cat$Tenure.Status)))
+
+
 
 # Visualización gráfica de la distribución de NA en el conjunto de datos correspondiente a las variables cualitativas
 
@@ -1367,10 +1381,9 @@ table_pos_Roof<-prop.table(table(var_train_cat$Type.of.Roof))
 
 ```
 
-Finalmente, se comprueba que las proporciones no se han visto afectadas por la imputación.
+Finalmente, se comprueba que las proporciones no se han visto afectadas por la imputación restando las proporciones antes y después de imputar y viendo que la variación es muy pequeña.
 
 ```{r warning=FALSE}
-
 # Comprobación de que las proporciones no se han visto afectadas por la imputación
 
 porc_dif_Tenure <- (table_pos_Tenure*100)-(table_pre_Tenure*100)
@@ -1378,7 +1391,40 @@ porc_dif_Worker <- (table_pos_Worker*100)-(table_pre_Worker*100)
 porc_dif_Walls <- (table_pos_Walls*100)-(table_pre_Walls*100)
 porc_dif_Roof <- (table_pos_Roof*100)-(table_pre_Roof*100)
 
+
+
+
+porc_dif_Tenure
+porc_dif_Worker
+porc_dif_Walls 
+porc_dif_Roof
 ```
+
+Variable porc_dif_Tenure
+
+```{r warning=FALSE}
+porc_dif_Tenure
+```
+
+Variable porc_dif_Worker
+
+```{r warning=FALSE}
+porc_dif_Worker
+```
+
+Variable porc_dif_Walls
+
+```{r warning=FALSE}
+porc_dif_Walls 
+```
+
+Variable porc_dif_Roof
+
+```{r warning=FALSE}
+porc_dif_Roof
+```
+
+
 
 ### 5.2 Transformación de variables
 
@@ -1773,7 +1819,7 @@ ggplot(data = mapa_corr, aes(x =X1, y =X2, fill =value)) + geom_tile() + theme(a
 
 Es conveniente evitar variables altamente correlacionadas entre sí, descartando de cada par la que más correlada esté con todas las demás. En el análisis no se incluirá la variable a predecir ("Total.Household.Income").
 
-Se aplica un umbral de valor absoluto igual a 0.5, para filtar aquellas variables correladas entre sí por encima de él.
+Se aplica un **umbral de valor absoluto igual a 0.5**, para filtar aquellas variables correladas entre sí por encima de él.
 
 ```{r warning=FALSE}
 
@@ -1800,7 +1846,7 @@ cor_mat_log<-cor_mat_log[,order(cor_mat_log[1,],decreasing = T)]
 
 ```
 
-Mapa de calor tras descartar ciertas variables:
+Mapa de calor tras descartar ciertas variables y ordenando el resto de variables seleccionadas frente al income por valor de correlación descendente (fijarse en la última fila de la matriz):
 
 ```{r warning=FALSE}
 
