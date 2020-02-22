@@ -48,7 +48,7 @@ El análisis de dividirá en dos fases:
 
 ### 4.1. Procesado inicial
 
-Antes de proceder con la visualización gráfica de las variables (para tener un visión de la distribución de nuestros datos), será realizado un preprocesamiento y limpieza del conjunto de datos. Serán etiquetados como NA aquellos valores que así deban considerarse; se eliminarán ciertas variables por no presentar interés para el objetivo planteado o por no estar bien categorizadas, y por último, seran preparados los conjuntos de test/validación y de train. Este último se utilizará para entrenar el modelo de predicción, que será después evaluado con el conjunto de test/validación.
+Antes de proceder con la visualización gráfica de las variables (para tener una visión de la distribución de nuestros datos), será realizado un preprocesamiento y limpieza del conjunto de datos. Serán etiquetados como NA aquellos valores que así deban considerarse; se eliminarán ciertas variables por no presentar interés para el objetivo planteado o por no estar bien categorizadas, y por último, seran preparados los conjuntos de test/validación y de train. Este último se utilizará para entrenar el modelo de predicción, que será después evaluado con el conjunto de test/validación.
 
 
 ```{r setup, include=FALSE}
@@ -88,7 +88,7 @@ A continuación, se realizará un resumen de los estadísticos principales de la
 ```{r warning=FALSE}
 # ----- Carga de datos -----
 
-datos<-read.csv('Family_Income_and_Expenditure.csv',stringsAsFactors = TRUE)
+datos<-read.csv('Family Income and Expenditure.csv',stringsAsFactors = TRUE)
 datos$Electricity<-as.factor(datos$Electricity)
 datos_occupation <- datos
 
@@ -115,7 +115,8 @@ cat <- datos %>%
 
 ```
 
-A la luz de la escasa documentación referida al conjunto de datos, ha sido imposible descifrar el significado de algunas variables. Por ejemplo, la variable Agricultural.Household.indicator posee 3 valores **0,1 y 2**. Tras no conocer su interpretación se decide eliminar de nuestro estudio.
+
+A la luz de la escasa documentación referida al conjunto de datos, ha sido imposible descifrar el significado de algunas variables. Por ejemplo, la variable Agricultural.Household.indicator posee 3 valores **0, 1 y 2**. Por ello, se decide eliminar del estudio aquellas cuya interpretación es desconocida.
 
 ```{r warning=FALSE}
 
@@ -125,9 +126,9 @@ datos<-datos%>%select(-Agricultural.Household.indicator,-Members.with.age.less.t
 ```
 
 
-Una vez descartadas aquellas variables, se irán etiquetando como NA (missing values) todos aquellos valores considerados erróneos o no recogidos. Por ejemplo, en algunas variables categóricas existe la categoría `unknown`, `not applicable`, etc. En el caso de las cuantitativas hay que tener cierto cuidado ya que algunas tienen valor `0`. Este valor no parace indicar que se trate de un `NA` ya que en casos de familias en situación de extrema pobreza, un gasto de `0` en restaurantes y hoteles tiene sentido. Se recuerda que en este data set se trabajan con datos socio económicos en los cuales el valor `0` tiene sentido.
+Una vez descartadas aquellas variables, se irán etiquetando como NA todos aquellos valores considerados erróneos o no recogidos (missing values). Estos vendrán normalmente etiquetados por `unknown`, `not applicable` o `0`. Sin embargo, en este último caso es necesario tener cuidado, ya que algunas variables pueden tomar valor 0 y esto ser correcto, debido al tipo de datos que son (valores socio-económicos).
 
-También, se categorizarán ciertas variables, seleccionando las posibles categorías que podrán adquirir.
+Además, se categorizarán ciertas variables, seleccionando las posibles categorías que podrán adquirir.
 
 ### Corrección de valores en variables y categorización
 
@@ -324,7 +325,7 @@ Para clarificar, será categorizada con valores de "Si" y "No", que sustituirán
 datos$Electricity<-fct_recode(datos$Electricity,Si='1',No='0')
 ```
 
-El último grupo de variables, corresponde al número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus rangos son muy reducidos con respecto a las demás. Se inspecciona más a fondo estas variables viendo sus principales estadísticos:
+El último grupo de variables corresponde al número de bienes adquiridos. Dichas variables son marcadas como numéricas, pero sus rangos son muy reducidos con respecto a las demás. Se inspecciona más a fondo estas variables viendo sus principales estadísticos:
 
 ```{r warning=FALSE}
 #---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1173,7 +1174,7 @@ Para esta sección, han sido planteadas una serie de preguntas interesantes que 
 
 **¿Qué porcentaje de la población tiene unos ingresos inferiores a 400000$ anuales** 
 
-La mayoría ronda por debajo de los 400000 pesos filipinos por familia al año (en torno al 85%). A continuación, se realiza una subdivisión del conjunto de datos en 3 subconjuntos: familias con ingresos inferiores a 400000 pesos filipinos, familias con ingresos entre 400000 y 1100000 pesos filipinos, y el resto. Mediante diagramas de caja (boxplot) se observa como esta división permite tener 3 grupos de familias en función de sus ingresos sin valores atípicos (gráfica 2 y 3), pese a observar mayor dispersión (desigualdad de ingresos) en el grupo más favorecido económicamente.
+La mayoría ronda por debajo de los 400000 pesos filipinos por familia al año (en torno al 85%). A continuación, se realiza una subdivisión del conjunto de datos en 3 subconjuntos: familias con ingresos inferiores a 400000 pesos filipinos, familias con ingresos entre 400000 y 1100000 pesos filipinos, y el resto. Mediante diagramas de caja (boxplot) se observa como esta división permite tener 3 grupos de familias en función de sus ingresos sin valores atípicos (gráficas 2 y 3), pese a observar mayor dispersión (desigualdad de ingresos) en el grupo más favorecido económicamente.
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -1303,7 +1304,7 @@ length(which(!complete.cases(datos_training)))
 
 ```
 
-Se observa que existen bastantes valores NA en el conjunto, pero todos corresponden a las variables cualitativas. Se muestra gráficamente como se distribuyenlos NA en el conjunto de datos correspondiente a las variables cualitativas.
+Se observa que existen bastantes valores NA en el conjunto, pero todos corresponden a las variables cualitativas. Se muestra gráficamente como se distribuyen los NA en el conjunto de datos correspondiente a las variables cualitativas.
 
 **Número de NA en el conjunto de variables cuantitativas**
 
@@ -1381,7 +1382,7 @@ table_pos_Roof<-prop.table(table(var_train_cat$Type.of.Roof))
 
 ```
 
-Finalmente, se comprueba que las proporciones no se han visto afectadas por la imputación restando las proporciones antes y después de imputar y viendo que la variación es muy pequeña.
+Finalmente, se comprueba que las proporciones no se han visto afectadas por la imputación,. Para ello, se restan las proporciones antes y después de imputar, y se comprueba que la variación es muy pequeña.
 
 ```{r warning=FALSE}
 # Comprobación de que las proporciones no se han visto afectadas por la imputación
