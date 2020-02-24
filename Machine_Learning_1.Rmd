@@ -1,0 +1,50 @@
+---
+title: "Machine_Learning_1"
+author: "Equipo ML1"
+date: "2/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r librerias_R,warning=FALSE,echo=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(forcats)
+library(caret)
+library(fastcluster)
+library(cluster)
+#library(PythoninR)
+library(VIM)
+library(reticulate)
+```
+
+```{python librerias_Python, warning=FALSE,echo=FALSE}
+import pandas as pd
+```
+
+
+```{r librerias_Python, warning=FALSE,echo=FALSE}
+# Información de las columnas
+Info_cols<-read.csv('Info_Columns_Philipines.csv',stringsAsFactors = TRUE)
+```
+
+
+```{python librerias_Python, warning=FALSE,echo=FALSE}
+# Este es un chunk de python que debería funcionar si el paquete reticulate se ha instalado correctamente
+# Carga de los datos de Training en python
+example =pd.read_csv("Training_Philipines.csv")
+example.head(5)
+```
+
+```{r librerias_R,warning=FALSE,echo=FALSE}
+# Carga de los datos de training en R
+datos<-read.csv('Training_Philipines.csv',stringsAsFactors = TRUE)
+head(datos)
+```
