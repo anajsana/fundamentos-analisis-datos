@@ -155,8 +155,31 @@ summary(datos$Toilet)
 
 ```{r}
 
+# Vuelve a aparecer un nivel de 'others'
+
+datos <- datos %>% mutate(Water =
+                   recode(Main.Source.of.Water.Supply,
+                         'Own use, faucet, community water system' = 'Good conditions',
+                         'Shared, faucet, community water system'= 'Good conditions',
+                         'Tubed/piped shallow well' = 'Regular conditions',
+                         'Protected spring, river, stream, etc'= 'Good conditions',
+                         'Lake, river, rain and others' = 'Bad conditions',
+                         'Unprotected spring, river, stream, etc'= 'Bad conditions',
+                         'Peddler' = 'Regular conditions',
+                         'Unprotected spring, river, stream, etc' = 'Bad conditions',
+                         'Dug well'= 'Bad conditions',
+                         'Own use, tubed/piped deep well' = 'Good conditions',
+                         'Shared, tubed/piped deep well'= 'Good conditions'))
+
+summary(datos$Water)
+
+
+```
+
+```{r}
+
 # Eliminamos las variables antiguas sin limpiar de nuestro data set
 
-datos<-datos%>%select(-Toilet.Facilities,-Type.of.Walls,-Type.of.Building.House,-Household.Head.Class.of.Worker, -Type.of.Household, -Tenure.Status, -Type.of.Roof)
+datos<-datos%>%select(-Toilet.Facilities,-Type.of.Walls,-Type.of.Building.House,-Household.Head.Class.of.Worker, -Type.of.Household, -Tenure.Status, -Type.of.Roof, -Main.Source.of.Water.Supply)
 
 ```
