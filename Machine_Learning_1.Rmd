@@ -29,12 +29,10 @@ library(reticulate)
 import pandas as pd
 ```
 
-
 ```{r librerias_Python, warning=FALSE,echo=FALSE}
 # Información de las columnas
 Info_cols<-read.csv('Info_Columns_Philipines.csv',stringsAsFactors = TRUE)
 ```
-
 
 ```{python librerias_Python, warning=FALSE,echo=FALSE}
 # Este es un chunk de python que debería funcionar si el paquete reticulate se ha instalado correctamente
@@ -47,4 +45,118 @@ example.head(5)
 # Carga de los datos de training en R
 datos<-read.csv('Training_Philipines.csv',stringsAsFactors = TRUE)
 head(datos)
+```
+
+# Pasos previos a la implementacion de modelos de ML
+
+## Limpieza de datos
+
+En primer lugar, decidimos renombar y reagrupar los niveles de nuestras variables categóricas, creando nuevas variables "limpias" en nuestro data set. Seguidamente, procedemos a eliminar las antiguas versiones
+
+```{r}
+
+datos <- datos %>% mutate(Roof =
+                   recode(Type.of.Roof,
+                         'Strong material(galvanized,iron,al,tile,concrete,brick,stone,asbestos)' = 'Strong',
+                         'Light material (cogon,nipa,anahaw)' = 'Light',
+                         'Mixed but predominantly strong materials' = 'Strong',
+                         'Mixed but predominantly light materials' = 'Light',
+                         'Salvaged/makeshift materials' = 'Salvaged',
+                         'Mixed but predominantly salvaged materials' = 'Salvaged'))
+
+summary(datos$Roof)
+
+```
+
+```{r}
+datos <- datos %>% mutate(TenueStatus =
+                   recode(Tenure.Status,
+                         'Own or owner-like possession of house and lot' = 'Fully_Paid',
+                         'Own house, rent-free lot with consent of owner' = 'Partial_Paid',
+                         'Rent house/room including lot' = 'Fully_Paid',
+                         'Rent-free house and lot without consent of owner' = 'Free',
+                         'Rent-free house and lot with consent of owner' = 'Free',
+                         'Own house, rent lot' = 'Fully_Paid',
+                         'Own house, rent-free lot without consent of owner' = 'Free'))
+
+summary(datos$TenueStatus)
+
+```
+
+```{r}
+
+datos <- datos %>% mutate(TypeHousehold =
+                   recode(Type.of.Household,
+                         'Two or More Nonrelated Persons/Members' = 'Nonrelated'))
+
+summary(datos$TypeHousehold)
+```
+
+```{r}
+
+datos <- datos %>% mutate(Worker =
+                   recode(Household.Head.Class.of.Worker,
+                         'Self-employed wihout any employee' = 'Freelance',
+                         'Worked for private establishment' = 'Employee',
+                         'Employer in own family-operated farm or business' = 'Family_Business',
+                         'Worked for government/government corporation'= 'Civil_Servant',
+                         'Worked for private household' = 'Employee',
+                         'Worked without pay in own family-operated farm or business' = 'Family_Business_Unpaid',
+                         'Worked with pay in own family-operated farm or business'='Family_Business'))
+
+summary(datos$Worker)
+
+```
+
+```{r}
+
+datos <- datos %>% mutate(TypeBuilding =
+                   recode(Type.of.Building.House,
+                         'Commercial/industrial/agricultural building' = 'Agricultural'))
+
+summary(datos$TypeBuilding)
+
+```
+
+```{r}
+
+# La variable type of walls y type of roof tiene contenidos muy similares. He decidido utilizar las mismas clasificaciones (strong light salvaged)
+# ya que nos estamos refiriendo a materiales
+
+datos <- datos %>% mutate(Walls =
+                   recode(Type.of.Walls,
+                         'Quite Strong' = 'Strong',
+                         'Very Light'= 'Light'))
+
+summary(datos$Walls)
+
+```
+
+```{r}
+# Aquí para el level 'none' he indicado como 'poor', asumiendo que 'none' significa que no tiene baño. 
+# Sin embargo, podría representarse como un 'no sabe, no contesta'
+# Podríamos indagar si tenemos tiempo
+
+# Además, hay un nivel 'others' que no se como tratar
+
+datos <- datos %>% mutate(Toilet =
+                   recode(Toilet.Facilities,
+                         'Water-sealed, sewer septic tank, used exclusively by household' = 'Good',
+                         'Open pit' = 'Poor',
+                         'Water-sealed, other depository, used exclusively by household'= 'Good',
+                         'None' = 'Poor',
+                         'Closed pit' = 'Poor',
+                         'Water-sealed, sewer septic tank, shared with other household' = 'Good',
+                         'Water-sealed, other depository, shared with other household' = 'Good'))
+
+summary(datos$Toilet)
+
+```
+
+```{r}
+
+# Eliminamos las variables antiguas sin limpiar de nuestro data set
+
+datos<-datos%>%select(-Toilet.Facilities,-Type.of.Walls,-Type.of.Building.House,-Household.Head.Class.of.Worker, -Type.of.Household, -Tenure.Status, -Type.of.Roof)
+
 ```
