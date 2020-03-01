@@ -20,7 +20,7 @@ library(forcats)
 library(caret)
 library(fastcluster)
 library(cluster)
-#library(PythoninR)
+#library(PythonInR)
 library(VIM)
 library(reticulate)
 ```
@@ -51,7 +51,7 @@ head(datos)
 
 ## Limpieza de datos
 
-En primer lugar, decidimos renombar y reagrupar los niveles de nuestras variables categóricas, creando nuevas variables "limpias" en nuestro data set. Seguidamente, procedemos a eliminar las antiguas versiones
+En primer lugar, se decide renombrar y reagrupar los niveles de las variables categóricas, creando nuevas variables "limpias" en el data set. Seguidamente, se procede a eliminar las antiguas versiones.
 
 ```{r}
 
@@ -183,3 +183,61 @@ summary(datos$Water)
 datos<-datos%>%select(-Toilet.Facilities,-Type.of.Walls,-Type.of.Building.House,-Household.Head.Class.of.Worker, -Type.of.Household, -Tenure.Status, -Type.of.Roof, -Main.Source.of.Water.Supply)
 
 ```
+
+```{r}
+
+# Categorización de variables number.of con posibles valores None, Unique y Many
+
+datos$Bedrooms  <-as.factor(datos$Bedrooms)
+datos$Bedrooms  <-fct_recode(datos$Bedrooms,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$TV  <-as.factor(datos$TV)
+datos$TV  <-fct_recode(datos$TV,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$CD.VCD.DVD  <-as.factor(datos$CD.VCD.DVD)
+datos$CD.VCD.DVD  <-fct_recode(datos$CD.VCD.DVD,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$ComponentStereoSet  <-as.factor(datos$ComponentStereoSet)
+datos$ComponentStereoSet  <-fct_recode(datos$ComponentStereoSet,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$RefrigeratorFreezer  <-as.factor(datos$RefrigeratorFreezer)
+datos$RefrigeratorFreezer  <-fct_recode(datos$RefrigeratorFreezer,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$WashingMachine  <-as.factor(datos$WashingMachine)
+datos$WashingMachine  <-fct_recode(datos$WashingMachine,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$Airconditioner  <-as.factor(datos$Airconditioner)
+datos$Airconditioner  <-fct_recode(datos$Airconditioner,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$Motorvehicle  <-as.factor(datos$Motorvehicle)
+datos$Motorvehicle  <-fct_recode(datos$Motorvehicle,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$LandlineWirelessTelephones  <-as.factor(datos$LandlineWirelessTelephones)
+datos$LandlineWirelessTelephones  <-fct_recode(datos$LandlineWirelessTelephones,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$CellularPhone  <-as.factor(datos$CellularPhone)
+datos$CellularPhone  <-fct_recode(datos$CellularPhone,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$PersonalComputers  <-as.factor(datos$PersonalComputers)
+datos$PersonalComputers  <-fct_recode(datos$PersonalComputers,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$StoveWithOvenGasRange  <-as.factor(datos$StoveWithOvenGasRange)
+datos$StoveWithOvenGasRange  <-fct_recode(datos$StoveWithOvenGasRange,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$MotorizedBanca  <-as.factor(datos$MotorizedBanca)
+datos$MotorizedBanca  <-fct_recode(datos$MotorizedBanca,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+datos$MotorcycleTricycle  <-as.factor(datos$MotorcycleTricycle)
+datos$MotorcycleTricycle  <-fct_recode(datos$MotorcycleTricycle,None='0',Unique='1',Many='2',Many='3',Many='4',Many='5',Many='6',Many='7',Many='8',Many='9')
+
+
+```
+```{r}
+
+# Conversion de variable de gasto de tabaco a categórica, con valores Smoker y NoSmoker
+datos$Tobacco <- replace(datos$Tobacco,datos$Tobacco>"0",9999) 
+datos$Tobacco  <-as.factor(datos$Tobacco)
+datos$Tobacco  <-fct_recode(datos$Tobacco,NoSmoker='0',Smoker='9999')
+                                       
+```
+
